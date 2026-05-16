@@ -12,8 +12,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 3001;
 
+// Increased limits for large image uploads
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
@@ -27,7 +29,7 @@ app.use('/uploads', express.static(uploadsDir));
 const dbPath = path.resolve(__dirname, '../database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
-// Multer configuration for file uploads
+// Multer configuration with 100MB limit
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
@@ -37,7 +39,10 @@ const storage = multer.diskStorage({
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
-const upload = multer({ storage });
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
+});
 
 // Basic Auth for Admin (Hardcoded for now)
 const ADMIN_USER = "admin";
@@ -96,7 +101,6 @@ app.get('/api/institutions/:id/images', (req, res) => {
   });
 });
 
-// Endpoint updated to handle file upload
 app.post('/api/images', upload.single('image'), (req, res) => {
   const { institution_id, title, description, url: externalUrl } = req.body;
   
@@ -121,7 +125,6 @@ app.post('/api/images', upload.single('image'), (req, res) => {
 app.delete('/api/images/:id', (req, res) => {
   const { id } = req.params;
   
-  // Also delete the physical file if it exists
   db.get("SELECT url FROM images WHERE id = ?", [id], (err, row) => {
     if (row && row.url.includes('/uploads/')) {
       const fileName = row.url.split('/uploads/')[1];
