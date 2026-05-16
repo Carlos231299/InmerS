@@ -96,10 +96,16 @@ app.get('/api/carousel', (req, res) => {
 app.post('/api/carousel', upload.single('image'), (req, res) => {
   const { title, description } = req.body;
   const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
-  db.run("INSERT INTO carousel (url, title, description) VALUES (?, ?, ?)", [url, title, description], function() { res.json({ id: this.lastID, url }); });
+  db.run("INSERT INTO carousel (url, title, description) VALUES (?, ?, ?)", [url, title, description], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, url });
+  });
 });
 app.delete('/api/carousel/:id', (req, res) => {
-  db.run("DELETE FROM carousel WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+  db.run("DELETE FROM carousel WHERE id = ?", [req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 
 // --- PROFILES (INMERSIONISTAS) ---
@@ -109,15 +115,24 @@ app.get('/api/profiles', (req, res) => {
 app.post('/api/profiles', upload.single('image'), (req, res) => {
   const { name, description, role } = req.body;
   const image_url = req.file ? `/uploads/${req.file.filename}` : req.body.image_url;
-  db.run("INSERT INTO profiles (name, description, image_url, role) VALUES (?, ?, ?, ?)", [name, description, image_url, role], function() { res.json({ id: this.lastID }); });
+  db.run("INSERT INTO profiles (name, description, image_url, role) VALUES (?, ?, ?, ?)", [name, description, image_url, role], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID });
+  });
 });
 app.put('/api/profiles/:id', upload.single('image'), (req, res) => {
   const { name, description, role, image_url: oldUrl } = req.body;
   const image_url = req.file ? `/uploads/${req.file.filename}` : oldUrl;
-  db.run("UPDATE profiles SET name=?, description=?, image_url=?, role=? WHERE id=?", [name, description, image_url, role, req.params.id], () => res.json({ success: true }));
+  db.run("UPDATE profiles SET name=?, description=?, image_url=?, role=? WHERE id=?", [name, description, image_url, role, req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 app.delete('/api/profiles/:id', (req, res) => {
-  db.run("DELETE FROM profiles WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+  db.run("DELETE FROM profiles WHERE id = ?", [req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 
 // --- LOGOS (ALIANZAS) ---
@@ -126,10 +141,16 @@ app.get('/api/logos', (req, res) => {
 });
 app.post('/api/logos', upload.single('image'), (req, res) => {
   const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
-  db.run("INSERT INTO logos (url) VALUES (?)", [url], function() { res.json({ id: this.lastID, url }); });
+  db.run("INSERT INTO logos (url) VALUES (?)", [url], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ id: this.lastID, url });
+  });
 });
 app.delete('/api/logos/:id', (req, res) => {
-  db.run("DELETE FROM logos WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+  db.run("DELETE FROM logos WHERE id = ?", [req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
+  });
 });
 
 app.listen(port, () => console.log(`Server at 3001`));
