@@ -24,6 +24,13 @@ app.use('/uploads', express.static(uploadsDir));
 const dbPath = path.resolve(__dirname, '../database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
+// Migration: Add institution_id to logos if it doesn't exist
+db.serialize(() => {
+  db.run("ALTER TABLE logos ADD COLUMN institution_id INTEGER", (err) => {
+    if (err) console.log("institution_id already exists in logos");
+  });
+});
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
@@ -140,10 +147,19 @@ app.get('/api/logos', (req, res) => {
   db.all("SELECT * FROM logos ORDER BY id DESC", (err, rows) => res.json(rows));
 });
 app.post('/api/logos', upload.single('image'), (req, res) => {
+  const { institution_id } = req.body;
   const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
-  db.run("INSERT INTO logos (url) VALUES (?)", [url], function(err) {
+  db.run("INSERT INTO logos (url, institution_id) VALUES (?, ?)", [url, institution_id || null], function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ id: this.lastID, url });
+  });
+});
+app.put('/api/logos/:id', upload.single('image'), (req, res) => {
+  const { institution_id, url: oldUrl } = req.body;
+  const url = req.file ? `/uploads/${req.file.filename}` : oldUrl;
+  db.run("UPDATE logos SET url=?, institution_id=? WHERE id=?", [url, institution_id || null, req.params.id], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true });
   });
 });
 app.delete('/api/logos/:id', (req, res) => {
@@ -155,13 +171,21 @@ app.delete('/api/logos/:id', (req, res) => {
 
 // --- STATS (DASHBOARD) ---
 app.get('/api/stats', (req, res) => {
-  db.all("SELECT id, name FROM institutions", (err, institutions) => {
+  db.all(`
+    SELECT i.id, i.name, l.url as logo_url 
+    FROM institutions i 
+    LEFT JOIN logos l ON i.id = l.institution_id
+  `, (err, institutions) => {
     if (err) return res.status(500).json({ error: err.message });
     db.all("SELECT institution_id, COUNT(*) as count FROM images GROUP BY institution_id", (err, imageCounts) => {
       if (err) return res.status(500).json({ error: err.message });
       const galleryStats = institutions.map((inst: any) => {
         const countRow = (imageCounts as any[]).find(r => r.institution_id === inst.id);
-        return { name: inst.name, photoCount: countRow ? countRow.count : 0 };
+        return { 
+          name: inst.name, 
+          photoCount: countRow ? countRow.count : 0,
+          logo_url: inst.logo_url 
+        };
       });
       
       db.get("SELECT COUNT(*) as count FROM activities", (err, actRow: any) => {

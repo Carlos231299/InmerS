@@ -25,6 +25,7 @@ const Admin: React.FC = () => {
   const [imageForm, setImageForm] = useState({ url: '', title: '', description: '' });
   const [carouselForm, setCarouselForm] = useState({ url: '', title: '', description: '' });
   const [profileForm, setProfileForm] = useState({ name: '', description: '', role: '', image_url: '' });
+  const [logoForm, setLogoForm] = useState({ url: '', institution_id: '' });
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -95,6 +96,7 @@ const Admin: React.FC = () => {
     setImageForm({ url: '', title: '', description: '' });
     setCarouselForm({ url: '', title: '', description: '' });
     setProfileForm({ name: '', description: '', role: '', image_url: '' });
+    setLogoForm({ url: '', institution_id: '' });
     setSelectedFile(null);
     setEditingId(null);
   };
@@ -288,8 +290,12 @@ const Admin: React.FC = () => {
                       {stats.galleryStats.map((inst: any, idx: number) => (
                         <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
                           <div className="flex items-center gap-4 w-2/3">
-                            <div className="w-12 h-12 shrink-0 bg-blue-50 text-blue-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                              <ImageIcon size={20} />
+                            <div className="w-12 h-12 shrink-0 bg-blue-50 text-blue-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
+                              {inst.logo_url ? (
+                                <img src={inst.logo_url.startsWith('/') ? `${API_URL}${inst.logo_url}` : inst.logo_url} className="w-full h-full object-contain p-1" alt="Shield" />
+                              ) : (
+                                <ImageIcon size={20} />
+                              )}
                             </div>
                             <h4 className="font-bold text-gray-700 leading-tight text-sm line-clamp-2">{inst.name}</h4>
                           </div>
@@ -607,33 +613,77 @@ const Admin: React.FC = () => {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
               <h1 className="text-3xl font-bold text-blue-900">Alianzas y Logos</h1>
-              <p className="text-gray-500 mt-1">Sube los logos de las instituciones aliadas para el carrusel inferior continuo.</p>
+              <p className="text-gray-500 mt-1">Sube los logos de las instituciones aliadas o los escudos de las sedes.</p>
             </div>
 
-            <form onSubmit={(e) => {e.preventDefault(); handleUpload('logos', {}, fetchLogos)}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={(e) => {e.preventDefault(); handleUpload('logos', logoForm, fetchLogos)}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold uppercase text-gray-400">Archivo de Logo (PNG transparente recomendado)</label>
+                <label className="text-xs font-bold uppercase text-gray-400">Archivo de Logo</label>
                 <div className="relative group">
                   <input type="file" onChange={e => setSelectedFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload-logo" accept="image/*" />
                   <label htmlFor="file-upload-logo" className="w-full px-4 py-2 rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-yellow cursor-pointer flex items-center justify-center gap-2 text-sm text-gray-500 transition-colors bg-gray-50">
-                    <Upload size={18} /> {selectedFile ? selectedFile.name : 'Subir Logo'}
+                    <Upload size={18} /> {selectedFile ? selectedFile.name : (editingId ? 'Cambiar Imagen' : 'Subir Logo')}
                   </label>
                 </div>
               </div>
-              <div className="md:col-span-2 flex justify-end">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">O URL Externa</label>
+                <input 
+                  value={logoForm.url} disabled={!!selectedFile} onChange={e => setLogoForm({...logoForm, url: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none disabled:bg-gray-100 disabled:text-gray-400 transition-shadow"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Vincular a Institución (Opcional)</label>
+                <select 
+                  value={logoForm.institution_id} onChange={e => setLogoForm({...logoForm, institution_id: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow bg-white font-bold text-blue-900"
+                >
+                  <option value="">No vincular (Solo Alianza)</option>
+                  {institutions.map(inst => (
+                    <option key={inst.id} value={inst.id}>{inst.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-gray-400 mt-1 italic">Si seleccionas una institución, este logo se usará como su escudo oficial en el panel principal.</p>
+              </div>
+              <div className="md:col-span-2 flex justify-end gap-2">
+                {editingId && (
+                  <button type="button" onClick={resetForm} className="bg-gray-100 text-gray-600 px-6 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition-colors">
+                    Cancelar Edición
+                  </button>
+                )}
                 <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
-                  <ImageIcon size={18} /> {loading ? 'Subiendo...' : 'Añadir Alianza'}
+                  <Handshake size={18} /> {loading ? 'Procesando...' : (editingId ? 'Actualizar Alianza' : 'Añadir Alianza')}
                 </button>
               </div>
             </form>
 
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
               {logos.map(l => (
-                <div key={l.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center relative group aspect-video">
-                  <img src={l.url.startsWith('/') ? `${API_URL}${l.url}` : l.url} className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300" alt="Logo" />
-                  <button onClick={() => deleteItem('logos', l.id, fetchLogos)} className="absolute -top-2 -right-2 text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-md">
-                    <Trash2 size={14} />
-                  </button>
+                <div key={l.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center relative group aspect-square hover:shadow-md transition-all">
+                  <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <img src={l.url.startsWith('/') ? `${API_URL}${l.url}` : l.url} className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300" alt="Logo" />
+                  </div>
+                  {l.institution_id && (
+                    <div className="mt-2 text-[8px] font-black uppercase tracking-tighter text-primary-yellow bg-blue-900 px-1.5 py-0.5 rounded-full truncate max-w-full">
+                      Vínculo: {institutions.find(i => i.id === l.institution_id)?.name || 'Sede'}
+                    </div>
+                  )}
+                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    <button 
+                      onClick={() => { setEditingId(l.id); setLogoForm({ url: l.url, institution_id: l.institution_id || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className="bg-blue-500 text-white p-1.5 rounded-lg shadow-lg hover:bg-blue-600 transition-colors"
+                    >
+                      <Edit size={12} />
+                    </button>
+                    <button 
+                      onClick={() => deleteItem('logos', l.id, fetchLogos)}
+                      className="bg-red-500 text-white p-1.5 rounded-lg shadow-lg hover:bg-red-600 transition-colors"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
