@@ -153,4 +153,31 @@ app.delete('/api/logos/:id', (req, res) => {
   });
 });
 
+// --- STATS (DASHBOARD) ---
+app.get('/api/stats', (req, res) => {
+  db.all("SELECT id, name FROM institutions", (err, institutions) => {
+    if (err) return res.status(500).json({ error: err.message });
+    db.all("SELECT institution_id, COUNT(*) as count FROM images GROUP BY institution_id", (err, imageCounts) => {
+      if (err) return res.status(500).json({ error: err.message });
+      const galleryStats = institutions.map((inst: any) => {
+        const countRow = (imageCounts as any[]).find(r => r.institution_id === inst.id);
+        return { name: inst.name, photoCount: countRow ? countRow.count : 0 };
+      });
+      
+      db.get("SELECT COUNT(*) as count FROM activities", (err, actRow: any) => {
+        db.get("SELECT COUNT(*) as count FROM profiles", (err, profRow: any) => {
+          db.get("SELECT COUNT(*) as count FROM logos", (err, logoRow: any) => {
+             res.json({
+               galleryStats,
+               totalActivities: actRow ? actRow.count : 0,
+               totalProfiles: profRow ? profRow.count : 0,
+               totalLogos: logoRow ? logoRow.count : 0
+             });
+          });
+        });
+      });
+    });
+  });
+});
+
 app.listen(port, () => console.log(`Server at 3001`));

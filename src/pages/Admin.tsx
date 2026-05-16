@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X, BarChart3, Camera } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
-type Tab = 'activities' | 'gallery' | 'carousel' | 'profiles' | 'logos';
+type Tab = 'dashboard' | 'activities' | 'gallery' | 'carousel' | 'profiles' | 'logos';
 
 const Admin: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('activities');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activities, setActivities] = useState<any[]>([]);
   const [institutions, setInstitutions] = useState<any[]>([]);
@@ -16,6 +16,7 @@ const Admin: React.FC = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [logos, setLogos] = useState<any[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState<string>('');
+  const [stats, setStats] = useState<any>(null);
 
   // Form states
   const [activityForm, setActivityForm] = useState({ name: '', drive_link: '', description: '' });
@@ -28,12 +29,17 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    fetchStats();
     fetchActivities();
     fetchInstitutions();
     fetchCarousel();
     fetchProfiles();
     fetchLogos();
   }, []);
+
+  const fetchStats = async () => {
+    try { const res = await axios.get(`${API_URL}/api/stats`); setStats(res.data); } catch (err) {}
+  };
 
   const fetchActivities = async () => {
     try { const res = await axios.get(`${API_URL}/api/activities`); setActivities(res.data); } catch (err) {}
@@ -69,8 +75,10 @@ const Admin: React.FC = () => {
   }, [selectedInstitution]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    window.location.href = '/login';
+    if (window.confirm('¿Estás seguro de que deseas cerrar la sesión?')) {
+      localStorage.removeItem('adminToken');
+      window.location.href = '/login';
+    }
   };
 
   const resetForm = () => {
@@ -164,6 +172,7 @@ const Admin: React.FC = () => {
         </div>
         <nav className="flex-1 p-4 space-y-2 mt-4 md:mt-0 overflow-y-auto scrollbar-hide">
           {[
+            { id: 'dashboard', label: 'Estadísticas', icon: BarChart3 },
             { id: 'activities', label: 'Actividades', icon: FileText },
             { id: 'gallery', label: 'Galería', icon: ImageIcon },
             { id: 'carousel', label: 'Carrusel Inicio', icon: PlayCircle },
@@ -188,6 +197,74 @@ const Admin: React.FC = () => {
       </aside>
 
       <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+        {/* TAB: DASHBOARD */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-900">Panel Principal</h1>
+              <p className="text-gray-500 mt-1">Resumen general de las estadísticas de la plataforma.</p>
+            </div>
+            
+            {stats ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="bg-blue-100 text-blue-900 p-4 rounded-xl"><FileText size={24} /></div>
+                    <div>
+                      <p className="text-sm text-gray-500 font-bold uppercase">Actividades</p>
+                      <p className="text-3xl font-black text-blue-900">{stats.totalActivities}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="bg-yellow-100 text-yellow-600 p-4 rounded-xl"><Users size={24} /></div>
+                    <div>
+                      <p className="text-sm text-gray-500 font-bold uppercase">Inmersionistas</p>
+                      <p className="text-3xl font-black text-blue-900">{stats.totalProfiles}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="bg-green-100 text-green-700 p-4 rounded-xl"><Handshake size={24} /></div>
+                    <div>
+                      <p className="text-sm text-gray-500 font-bold uppercase">Alianzas</p>
+                      <p className="text-3xl font-black text-blue-900">{stats.totalLogos}</p>
+                    </div>
+                  </div>
+                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="bg-purple-100 text-purple-700 p-4 rounded-xl"><ImageIcon size={24} /></div>
+                    <div>
+                      <p className="text-sm text-gray-500 font-bold uppercase">Total Fotos</p>
+                      <p className="text-3xl font-black text-blue-900">{stats.galleryStats.reduce((acc: number, curr: any) => acc + curr.photoCount, 0)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2"><Camera size={20} className="text-primary-yellow" /> Fotos por Institución</h3>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    {stats.galleryStats.length > 0 ? (
+                      <ul className="divide-y divide-gray-100">
+                        {stats.galleryStats.map((inst: any, idx: number) => (
+                          <li key={idx} className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors">
+                            <span className="font-bold text-gray-700">{inst.name}</span>
+                            <span className="bg-blue-50 text-blue-900 font-black px-3 py-1 rounded-lg text-sm">{inst.photoCount} {inst.photoCount === 1 ? 'foto' : 'fotos'}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="p-8 text-center text-gray-400 font-medium">No hay instituciones registradas.</div>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-900 mx-auto"></div>
+                <p className="text-gray-500 mt-4 font-medium">Cargando estadísticas reales...</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* TAB: ACTIVITIES */}
         {activeTab === 'activities' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
