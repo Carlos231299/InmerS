@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, Edit, LogOut, Upload, Users, PlayCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Trash2, LogOut, Users, PlayCircle } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -22,7 +22,6 @@ const Admin: React.FC = () => {
   const [profileForm, setProfileForm] = useState({ name: '', description: '', role: '', image_url: '' });
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -74,7 +73,6 @@ const Admin: React.FC = () => {
     setCarouselForm({ url: '', title: '', description: '' });
     setProfileForm({ name: '', description: '', role: '', image_url: '' });
     setSelectedFile(null);
-    setEditingId(null);
   };
 
   // --- HANDLERS ---
