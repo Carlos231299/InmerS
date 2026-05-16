@@ -44,7 +44,7 @@ const Profiles: React.FC = () => {
                 <img 
                   src={profile.image_url.startsWith('/') ? `${API_URL}${profile.image_url}` : profile.image_url} 
                   alt={profile.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-110" 
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-blue-900/90 to-transparent text-white">
                   <p className="text-xs font-bold uppercase tracking-widest text-primary-yellow">{profile.role}</p>
