@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import Navbar from './components/Navbar';
@@ -116,12 +116,34 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  return (
+    <div className="min-h-screen bg-white flex flex-col">
+      <Toaster position="top-right" richColors />
+      {!isAdminRoute && <Navbar />}
+      
+      <div className="flex-1">
+        {children}
+      </div>
+
+      {!isAdminRoute && (
+        <footer className="bg-black text-white py-10">
+          <div className="container mx-auto px-4 text-center opacity-60 text-sm">
+            &copy; {new Date().getFullYear()} Corporación Universitaria UNIMINUTO. Todos los derechos reservados.
+          </div>
+        </footer>
+      )}
+    </div>
+  );
+};
+
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-white">
-        <Toaster position="top-right" richColors />
-        <Navbar />
+      <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/institucion/:id" element={<InstitutionDetail />} />
@@ -136,12 +158,7 @@ function App() {
             } 
           />
         </Routes>
-        <footer className="bg-black text-white py-10">
-          <div className="container mx-auto px-4 text-center opacity-60 text-sm">
-            &copy; {new Date().getFullYear()} Corporación Universitaria UNIMINUTO. Todos los derechos reservados.
-          </div>
-        </footer>
-      </div>
+      </Layout>
     </Router>
   );
 }

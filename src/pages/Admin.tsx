@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -8,6 +8,7 @@ type Tab = 'activities' | 'gallery' | 'carousel' | 'profiles' | 'logos';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('activities');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activities, setActivities] = useState<any[]>([]);
   const [institutions, setInstitutions] = useState<any[]>([]);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
@@ -134,15 +135,34 @@ const Admin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
+    <div className="min-h-screen bg-gray-100 flex flex-col md:flex-row relative">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden bg-blue-900 text-white p-4 flex items-center justify-between shadow-md z-20 sticky top-0">
+        <h2 className="text-xl font-bold flex items-center gap-2">
+          <LayoutDashboard size={20} /> Admin Panel
+        </h2>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-1">
+          {isSidebarOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
+      {/* Sidebar overlay for mobile */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-blue-900 text-white flex flex-col shadow-xl z-10">
-        <div className="p-6 text-center border-b border-blue-800">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 w-64 bg-blue-900 text-white flex flex-col shadow-xl z-40
+        transform transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <div className="p-6 text-center border-b border-blue-800 hidden md:block">
           <h2 className="text-xl font-bold flex items-center justify-center gap-2">
             <LayoutDashboard size={20} /> Admin Panel
           </h2>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 mt-4 md:mt-0 overflow-y-auto scrollbar-hide">
           {[
             { id: 'activities', label: 'Actividades', icon: FileText },
             { id: 'gallery', label: 'Galería', icon: ImageIcon },
@@ -152,7 +172,7 @@ const Admin: React.FC = () => {
           ].map(item => (
             <button 
               key={item.id}
-              onClick={() => {setActiveTab(item.id as Tab); resetForm();}}
+              onClick={() => {setActiveTab(item.id as Tab); resetForm(); setIsSidebarOpen(false);}}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold tracking-wide ${activeTab === item.id ? 'bg-primary-yellow text-blue-900 shadow-md' : 'hover:bg-blue-800 text-blue-100'}`}
             >
               <item.icon size={18} /> {item.label}
@@ -161,13 +181,13 @@ const Admin: React.FC = () => {
         </nav>
         <button 
           onClick={handleLogout} 
-          className="m-4 p-3 flex items-center justify-center gap-2 bg-red-600/20 hover:bg-red-600 text-red-100 hover:text-white rounded-xl transition-colors text-sm font-bold tracking-wide"
+          className="m-4 p-3 flex items-center justify-center gap-2 bg-red-600/20 hover:bg-red-600 text-red-100 hover:text-white rounded-xl transition-colors text-sm font-bold tracking-wide mt-auto"
         >
           <LogOut size={16} /> Cerrar Sesión
         </button>
       </aside>
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
         {/* TAB: ACTIVITIES */}
         {activeTab === 'activities' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
