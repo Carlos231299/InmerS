@@ -445,7 +445,7 @@ const Admin: React.FC = () => {
               {galleryImages.map(img => (
                 <div key={img.id} className="relative aspect-4/3 rounded-2xl overflow-hidden group shadow-md border border-gray-100">
                   <img src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-linear-to-t from-blue-900/90 via-blue-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 text-white">
+                  <div className="absolute inset-0 bg-linear-to-t from-blue-900/90 via-blue-900/40 to-transparent flex flex-col justify-end p-4 text-white">
                     <p className="font-bold text-sm leading-tight drop-shadow-md">{img.title}</p>
                     <button onClick={() => deleteItem('images', img.id, () => fetchGallery(selectedInstitution))} className="mt-3 bg-red-600/90 hover:bg-red-600 text-white py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors w-fit">
                       <Trash2 size={14} /> Eliminar
@@ -516,7 +516,7 @@ const Admin: React.FC = () => {
                   <div className="p-5 flex-1 bg-white relative">
                     <h4 className="font-black text-blue-900 text-lg leading-tight mb-1">{item.title}</h4>
                     <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
-                    <button onClick={() => deleteItem('carousel', item.id, fetchCarousel)} className="absolute -top-6 right-4 bg-red-600 text-white p-2.5 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-700 hover:scale-110">
+                    <button onClick={() => deleteItem('carousel', item.id, fetchCarousel)} className="absolute -top-6 right-4 bg-red-600 text-white p-2.5 rounded-xl shadow-lg transition-all hover:bg-red-700 hover:scale-110">
                       <Trash2 size={18} />
                     </button>
                   </div>
@@ -594,11 +594,11 @@ const Admin: React.FC = () => {
                     <p className="text-xs text-primary-yellow font-black uppercase tracking-widest mb-2 truncate bg-blue-900 w-fit px-2 py-0.5 rounded">{p.role}</p>
                     <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{p.description}</p>
                   </div>
-                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={() => { setEditingId(p.id); setProfileForm({ name: p.name, description: p.description, role: p.role, image_url: p.image_url }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg">
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 transition-all">
+                    <button onClick={() => { setEditingId(p.id); setProfileForm({ name: p.name, description: p.description, role: p.role, image_url: p.image_url }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg bg-white/80 shadow-sm md:shadow-none">
                       <Edit size={20} />
                     </button>
-                    <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg">
+                    <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg bg-white/80 shadow-sm md:shadow-none">
                       <Trash2 size={20} />
                     </button>
                   </div>
@@ -670,7 +670,7 @@ const Admin: React.FC = () => {
                       Vínculo: {institutions.find(i => i.id === l.institution_id)?.name || 'Sede'}
                     </div>
                   )}
-                  <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="absolute top-1 right-1 flex gap-1 transition-all">
                     <button 
                       onClick={() => { setEditingId(l.id); setLogoForm({ url: l.url, institution_id: l.institution_id || '' }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                       className="bg-blue-500 text-white p-1.5 rounded-lg shadow-lg hover:bg-blue-600 transition-colors"
