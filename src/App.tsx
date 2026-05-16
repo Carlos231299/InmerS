@@ -8,6 +8,7 @@ import Review from './components/Review';
 import InstitutionDetail from './pages/InstitutionDetail';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import { API_URL } from './config';
 
 const HomePage: React.FC = () => {
   return (
@@ -23,7 +24,7 @@ const ActivitiesPage: React.FC = () => {
   const [activities, setActivities] = React.useState<any[]>([]);
 
   React.useEffect(() => {
-    axios.get('http://localhost:3001/api/activities')
+    axios.get(`${API_URL}/api/activities`)
       .then(res => setActivities(res.data))
       .catch(err => console.error(err));
   }, []);

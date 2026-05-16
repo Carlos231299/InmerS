@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "nodemon --watch server --exec ts-node server/index.ts",
-    "seed": "ts-node server/seed.ts"
+    "server": "tsx watch server/index.ts",
+    "seed": "tsx server/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.0",

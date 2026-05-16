@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, GraduationCap } from 'lucide-react';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 interface Institution {
   id: number;
@@ -12,7 +13,7 @@ const Navbar: React.FC = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/api/institutions')
+    axios.get(`${API_URL}/api/institutions`)
       .then(res => setInstitutions(res.data))
       .catch(err => console.error(err));
   }, []);

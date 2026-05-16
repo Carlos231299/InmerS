@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Lock, User, GraduationCap } from 'lucide-react';
+import { API_URL } from '../config';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +11,7 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:3001/api/login', { username, password });
+      const res = await axios.post(`${API_URL}/api/login`, { username, password });
       if (res.data.success) {
         localStorage.setItem('adminToken', res.data.token);
         window.location.href = '/admin';

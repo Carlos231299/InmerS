@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, Edit, LogOut, Upload } from 'lucide-react';
+import { API_URL } from '../config';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'activities' | 'gallery'>('activities');
@@ -22,19 +23,19 @@ const Admin: React.FC = () => {
   }, []);
 
   const fetchActivities = async () => {
-    const res = await axios.get('http://localhost:3001/api/activities');
+    const res = await axios.get(`${API_URL}/api/activities`);
     setActivities(res.data);
   };
 
   const fetchInstitutions = async () => {
-    const res = await axios.get('http://localhost:3001/api/institutions');
+    const res = await axios.get(`${API_URL}/api/institutions`);
     setInstitutions(res.data);
     if (res.data.length > 0) setSelectedInstitution(res.data[0].id);
   };
 
   const fetchGallery = async (instId: string) => {
     if (!instId) return;
-    const res = await axios.get(`http://localhost:3001/api/institutions/${instId}/images`);
+    const res = await axios.get(`${API_URL}/api/institutions/${instId}/images`);
     setGalleryImages(res.data);
   };
 
@@ -51,9 +52,9 @@ const Admin: React.FC = () => {
   const saveActivity = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingActivity) {
-      await axios.put(`http://localhost:3001/api/activities/${editingActivity}`, activityForm);
+      await axios.put(`${API_URL}/api/activities/${editingActivity}`, activityForm);
     } else {
-      await axios.post('http://localhost:3001/api/activities', activityForm);
+      await axios.post(`${API_URL}/api/activities`, activityForm);
     }
     setActivityForm({ name: '', drive_link: '', description: '' });
     setEditingActivity(null);
@@ -62,7 +63,7 @@ const Admin: React.FC = () => {
 
   const deleteActivity = async (id: number) => {
     if (confirm('¿Eliminar esta actividad?')) {
-      await axios.delete(`http://localhost:3001/api/activities/${id}`);
+      await axios.delete(`${API_URL}/api/activities/${id}`);
       fetchActivities();
     }
   };
@@ -88,7 +89,7 @@ const Admin: React.FC = () => {
         return;
       }
 
-      await axios.post('http://localhost:3001/api/images', formData, {
+      await axios.post(`${API_URL}/api/images`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
@@ -105,7 +106,7 @@ const Admin: React.FC = () => {
 
   const deleteImage = async (id: number) => {
     if (confirm('¿Eliminar esta imagen?')) {
-      await axios.delete(`http://localhost:3001/api/images/${id}`);
+      await axios.delete(`${API_URL}/api/images/${id}`);
       fetchGallery(selectedInstitution);
     }
   };

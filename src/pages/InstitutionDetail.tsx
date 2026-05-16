@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface Institution {
   id: number;
@@ -26,8 +27,8 @@ const InstitutionDetail: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      axios.get(`http://localhost:3001/api/institutions/${id}`),
-      axios.get(`http://localhost:3001/api/institutions/${id}/images`)
+      axios.get(`${API_URL}/api/institutions/${id}`),
+      axios.get(`${API_URL}/api/institutions/${id}/images`)
     ]).then(([instRes, imgRes]) => {
       setInstitution(instRes.data);
       setImages(imgRes.data);
