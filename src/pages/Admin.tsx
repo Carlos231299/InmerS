@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Trash2, LogOut, Users, PlayCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -32,30 +32,28 @@ const Admin: React.FC = () => {
   }, []);
 
   const fetchActivities = async () => {
-    const res = await axios.get(`${API_URL}/api/activities`);
-    setActivities(res.data);
+    try { const res = await axios.get(`${API_URL}/api/activities`); setActivities(res.data); } catch (err) {}
   };
 
   const fetchInstitutions = async () => {
-    const res = await axios.get(`${API_URL}/api/institutions`);
-    setInstitutions(res.data);
-    if (res.data.length > 0) setSelectedInstitution(res.data[0].id);
+    try {
+      const res = await axios.get(`${API_URL}/api/institutions`);
+      setInstitutions(res.data);
+      if (res.data.length > 0) setSelectedInstitution(res.data[0].id);
+    } catch (err) {}
   };
 
   const fetchGallery = async (id: string) => {
     if (!id) return;
-    const res = await axios.get(`${API_URL}/api/institutions/${id}/images`);
-    setGalleryImages(res.data);
+    try { const res = await axios.get(`${API_URL}/api/institutions/${id}/images`); setGalleryImages(res.data); } catch (err) {}
   };
 
   const fetchCarousel = async () => {
-    const res = await axios.get(`${API_URL}/api/carousel`);
-    setCarouselItems(res.data);
+    try { const res = await axios.get(`${API_URL}/api/carousel`); setCarouselItems(res.data); } catch (err) {}
   };
 
   const fetchProfiles = async () => {
-    const res = await axios.get(`${API_URL}/api/profiles`);
-    setProfiles(res.data);
+    try { const res = await axios.get(`${API_URL}/api/profiles`); setProfiles(res.data); } catch (err) {}
   };
 
   useEffect(() => {
@@ -80,16 +78,19 @@ const Admin: React.FC = () => {
     e.preventDefault();
     try {
       await axios.post(`${API_URL}/api/activities`, activityForm);
-      toast.success('Actividad guardada');
+      toast.success('Actividad creada con éxito');
       resetForm();
       fetchActivities();
-    } catch (err) { toast.error('Error'); }
+    } catch (err) { toast.error('Error al guardar la actividad'); }
   };
 
   const deleteActivity = async (id: number) => {
-    if (confirm('¿Eliminar?')) {
-      await axios.delete(`${API_URL}/api/activities/${id}`);
-      fetchActivities();
+    if (confirm('¿Eliminar esta actividad?')) {
+      try {
+        await axios.delete(`${API_URL}/api/activities/${id}`);
+        toast.success('Actividad eliminada');
+        fetchActivities();
+      } catch (err) { toast.error('No se pudo eliminar'); }
     }
   };
 
@@ -104,113 +105,251 @@ const Admin: React.FC = () => {
       toast.success('Guardado correctamente');
       resetForm();
       callback();
-    } catch (err) { toast.error('Error al subir'); }
+    } catch (err) { toast.error('Error al subir. Verifica tamaño y permisos.'); }
     finally { setLoading(false); }
   };
 
   const deleteItem = async (endpoint: string, id: number, callback: Function) => {
     if (confirm('¿Eliminar definitivamente?')) {
-      await axios.delete(`${API_URL}/api/${endpoint}/${id}`);
-      toast.success('Eliminado');
-      callback();
+      try {
+        await axios.delete(`${API_URL}/api/${endpoint}/${id}`);
+        toast.success('Eliminado correctamente');
+        callback();
+      } catch (err) { toast.error('Error al eliminar'); }
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-blue-900 text-white flex flex-col">
-        <div className="p-6 border-b border-blue-800 font-bold text-xl flex items-center gap-2">
-          <LayoutDashboard /> InmerS Admin
+      <aside className="w-64 bg-blue-900 text-white flex flex-col shadow-xl z-10">
+        <div className="p-6 text-center border-b border-blue-800">
+          <h2 className="text-xl font-bold flex items-center justify-center gap-2">
+            <LayoutDashboard size={20} /> Admin Panel
+          </h2>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-2">
           {[
             { id: 'activities', label: 'Actividades', icon: FileText },
-            { id: 'gallery', label: 'Galería Sede', icon: ImageIcon },
+            { id: 'gallery', label: 'Galería', icon: ImageIcon },
             { id: 'carousel', label: 'Carrusel Inicio', icon: PlayCircle },
             { id: 'profiles', label: 'Inmersionistas', icon: Users },
           ].map(item => (
             <button 
               key={item.id}
               onClick={() => {setActiveTab(item.id as Tab); resetForm();}}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === item.id ? 'bg-primary-yellow text-blue-900 font-bold' : 'hover:bg-blue-800 text-blue-100'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-bold tracking-wide ${activeTab === item.id ? 'bg-primary-yellow text-blue-900 shadow-md' : 'hover:bg-blue-800 text-blue-100'}`}
             >
               <item.icon size={18} /> {item.label}
             </button>
           ))}
         </nav>
-        <button onClick={handleLogout} className="m-4 p-3 bg-red-500/20 hover:bg-red-500 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
-          <LogOut size={16} /> Salir
+        <button 
+          onClick={handleLogout} 
+          className="m-4 p-3 flex items-center justify-center gap-2 bg-red-600/20 hover:bg-red-600 text-red-100 hover:text-white rounded-xl transition-colors text-sm font-bold tracking-wide"
+        >
+          <LogOut size={16} /> Cerrar Sesión
         </button>
       </aside>
 
       <main className="flex-1 p-8 overflow-y-auto">
-        {/* Render Tabs */}
+        {/* TAB: ACTIVITIES */}
         {activeTab === 'activities' && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-blue-900 uppercase">Gestión de Actividades</h1>
-            <form onSubmit={saveActivity} className="bg-white p-6 rounded-2xl shadow-sm grid grid-cols-2 gap-4">
-              <input value={activityForm.name} onChange={e => setActivityForm({...activityForm, name: e.target.value})} placeholder="Nombre" className="p-2 border rounded-lg" required />
-              <input value={activityForm.drive_link} onChange={e => setActivityForm({...activityForm, drive_link: e.target.value})} placeholder="Link Drive" className="p-2 border rounded-lg" required />
-              <textarea value={activityForm.description} onChange={e => setActivityForm({...activityForm, description: e.target.value})} placeholder="Descripción" className="col-span-2 p-2 border rounded-lg" />
-              <button type="submit" className="col-span-2 bg-blue-900 text-white py-2 rounded-xl font-bold hover:bg-blue-800">Guardar Actividad</button>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-900">Gestión de Actividades</h1>
+              <p className="text-gray-500 mt-1">Añade o edita los documentos de Drive que verán los usuarios.</p>
+            </div>
+
+            <form onSubmit={saveActivity} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Nombre de la Actividad</label>
+                <input 
+                  required value={activityForm.name} onChange={e => setActivityForm({...activityForm, name: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="Ej. Taller de Resiliencia"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Link de Google Drive</label>
+                <input 
+                  required value={activityForm.drive_link} onChange={e => setActivityForm({...activityForm, drive_link: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="https://drive.google.com/..."
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Descripción (Opcional)</label>
+                <textarea 
+                  value={activityForm.description} onChange={e => setActivityForm({...activityForm, description: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow h-20"
+                  placeholder="Breve detalle de la actividad..."
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button type="submit" className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 transition-colors shadow-md">
+                  <Plus size={18} /> Crear Actividad
+                </button>
+              </div>
             </form>
-            <div className="grid grid-cols-3 gap-4">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {activities.map(act => (
-                <div key={act.id} className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-start">
+                <div key={act.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between group hover:shadow-md transition-shadow">
                   <div>
-                    <p className="font-bold">{act.name}</p>
-                    <p className="text-xs text-gray-400">{act.drive_link.substring(0, 30)}...</p>
+                    <h4 className="font-bold text-blue-900 text-lg mb-1">{act.name}</h4>
+                    <p className="text-sm text-gray-500 mb-4 line-clamp-2">{act.description || 'Sin descripción'}</p>
+                    <div className="text-[10px] bg-gray-50 border border-gray-100 p-2 rounded-lg break-all text-gray-400 font-mono">{act.drive_link}</div>
                   </div>
-                  <button onClick={() => deleteActivity(act.id)} className="text-red-500"><Trash2 size={16} /></button>
+                  <div className="flex justify-end mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => deleteActivity(act.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold">
+                      <Trash2 size={16} /> Eliminar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* TAB: GALLERY */}
         {activeTab === 'gallery' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-blue-900 uppercase">Galería Institucional</h1>
-              <select value={selectedInstitution} onChange={e => setSelectedInstitution(e.target.value)} className="p-2 border rounded-xl font-bold">
-                {institutions.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
-              </select>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex justify-between items-end">
+              <div>
+                <h1 className="text-3xl font-bold text-blue-900">Galería Institucional</h1>
+                <p className="text-gray-500 mt-1">Gestiona las imágenes que aparecen en cada sede.</p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold uppercase text-gray-400">Filtrar por Sede</label>
+                <select 
+                  value={selectedInstitution} onChange={e => setSelectedInstitution(e.target.value)}
+                  className="bg-white px-4 py-2 rounded-xl border border-gray-200 font-bold text-blue-900 outline-none focus:ring-2 focus:ring-primary-yellow shadow-sm"
+                >
+                  {institutions.map(inst => <option key={inst.id} value={inst.id}>{inst.name}</option>)}
+                </select>
+              </div>
             </div>
-            <form onSubmit={(e) => {e.preventDefault(); handleUpload('images', { institution_id: selectedInstitution, ...imageForm }, () => fetchGallery(selectedInstitution))}} className="bg-white p-6 rounded-2xl shadow-sm grid grid-cols-2 gap-4">
-              <input type="file" onChange={e => setSelectedFile(e.target.files![0])} className="p-2 border rounded-lg" />
-              <input value={imageForm.url} onChange={e => setImageForm({...imageForm, url: e.target.value})} placeholder="O URL Externa" className="p-2 border rounded-lg" />
-              <input value={imageForm.title} onChange={e => setImageForm({...imageForm, title: e.target.value})} placeholder="Título" className="col-span-2 p-2 border rounded-lg" required />
-              <textarea value={imageForm.description} onChange={e => setImageForm({...imageForm, description: e.target.value})} placeholder="Descripción" className="col-span-2 p-2 border rounded-lg" required />
-              <button type="submit" disabled={loading} className="col-span-2 bg-blue-900 text-white py-2 rounded-xl font-bold">{loading ? 'Subiendo...' : 'Subir a Galería'}</button>
+
+            <form onSubmit={(e) => {e.preventDefault(); handleUpload('images', { institution_id: selectedInstitution, ...imageForm }, () => fetchGallery(selectedInstitution))}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Archivo de Imagen</label>
+                <div className="relative group">
+                  <input type="file" onChange={e => setSelectedFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload-gallery" accept="image/*" />
+                  <label htmlFor="file-upload-gallery" className="w-full px-4 py-2 rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-yellow cursor-pointer flex items-center justify-center gap-2 text-sm text-gray-500 transition-colors bg-gray-50">
+                    <Upload size={18} /> {selectedFile ? selectedFile.name : 'Seleccionar Archivo Físico'}
+                  </label>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">O URL de la Imagen</label>
+                <input 
+                  value={imageForm.url} disabled={!!selectedFile} onChange={e => setImageForm({...imageForm, url: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none disabled:bg-gray-100 disabled:text-gray-400 transition-shadow"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Título de la Imagen</label>
+                <input 
+                  required value={imageForm.title} onChange={e => setImageForm({...imageForm, title: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="Ej: Inauguración del Huerto"
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Descripción</label>
+                <textarea 
+                  required value={imageForm.description} onChange={e => setImageForm({...imageForm, description: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow h-20"
+                  placeholder="Detalles sobre qué ocurre en la imagen..."
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
+                  <ImageIcon size={18} /> {loading ? 'Subiendo...' : 'Subir a la Galería'}
+                </button>
+              </div>
             </form>
-            <div className="grid grid-cols-4 gap-4">
+
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {galleryImages.map(img => (
-                <div key={img.id} className="relative group rounded-xl overflow-hidden shadow-sm aspect-video">
-                  <img src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} className="w-full h-full object-cover" />
-                  <button onClick={() => deleteItem('images', img.id, () => fetchGallery(selectedInstitution))} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
+                <div key={img.id} className="relative aspect-4/3 rounded-2xl overflow-hidden group shadow-md border border-gray-100">
+                  <img src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-linear-to-t from-blue-900/90 via-blue-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 text-white">
+                    <p className="font-bold text-sm leading-tight drop-shadow-md">{img.title}</p>
+                    <button onClick={() => deleteItem('images', img.id, () => fetchGallery(selectedInstitution))} className="mt-3 bg-red-600/90 hover:bg-red-600 text-white py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors w-fit">
+                      <Trash2 size={14} /> Eliminar
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
+        {/* TAB: CAROUSEL */}
         {activeTab === 'carousel' && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-blue-900 uppercase">Carrusel de Inicio</h1>
-            <form onSubmit={(e) => {e.preventDefault(); handleUpload('carousel', carouselForm, fetchCarousel)}} className="bg-white p-6 rounded-2xl shadow-sm grid grid-cols-2 gap-4">
-              <input type="file" onChange={e => setSelectedFile(e.target.files![0])} className="p-2 border rounded-lg" />
-              <input value={carouselForm.title} onChange={e => setCarouselForm({...carouselForm, title: e.target.value})} placeholder="Título del Slide" className="p-2 border rounded-lg" />
-              <textarea value={carouselForm.description} onChange={e => setCarouselForm({...carouselForm, description: e.target.value})} placeholder="Descripción corta" className="col-span-2 p-2 border rounded-lg" />
-              <button type="submit" className="col-span-2 bg-blue-900 text-white py-2 rounded-xl font-bold">Añadir al Carrusel</button>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-900">Carrusel Principal</h1>
+              <p className="text-gray-500 mt-1">Configura las imágenes gigantes que aparecen al abrir la página web.</p>
+            </div>
+
+            <form onSubmit={(e) => {e.preventDefault(); handleUpload('carousel', carouselForm, fetchCarousel)}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Imagen de Fondo (Alta Calidad)</label>
+                <div className="relative group">
+                  <input type="file" onChange={e => setSelectedFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload-carousel" accept="image/*" />
+                  <label htmlFor="file-upload-carousel" className="w-full px-4 py-2 rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-yellow cursor-pointer flex items-center justify-center gap-2 text-sm text-gray-500 transition-colors bg-gray-50">
+                    <Upload size={18} /> {selectedFile ? selectedFile.name : 'Subir Archivo'}
+                  </label>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">O URL Externa</label>
+                <input 
+                  value={carouselForm.url} disabled={!!selectedFile} onChange={e => setCarouselForm({...carouselForm, url: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none disabled:bg-gray-100 disabled:text-gray-400 transition-shadow"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Título del Slide</label>
+                <input 
+                  required value={carouselForm.title} onChange={e => setCarouselForm({...carouselForm, title: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="Ej: Transformando Vidas"
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Descripción del Slide</label>
+                <textarea 
+                  required value={carouselForm.description} onChange={e => setCarouselForm({...carouselForm, description: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow h-20"
+                  placeholder="Añade un subtítulo llamativo..."
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
+                  <PlayCircle size={18} /> {loading ? 'Subiendo...' : 'Añadir al Carrusel'}
+                </button>
+              </div>
             </form>
-            <div className="grid grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {carouselItems.map(item => (
-                <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm relative group">
-                  <img src={item.url.startsWith('/') ? `${API_URL}${item.url}` : item.url} className="w-full h-40 object-cover" />
-                  <div className="p-4">
-                    <p className="font-bold">{item.title}</p>
-                    <button onClick={() => deleteItem('carousel', item.id, fetchCarousel)} className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
+                <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 relative group flex flex-col h-[280px]">
+                  <div className="h-40 overflow-hidden relative">
+                    <img src={item.url.startsWith('/') ? `${API_URL}${item.url}` : item.url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent to-black/50" />
+                  </div>
+                  <div className="p-5 flex-1 bg-white relative">
+                    <h4 className="font-black text-blue-900 text-lg leading-tight mb-1">{item.title}</h4>
+                    <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+                    <button onClick={() => deleteItem('carousel', item.id, fetchCarousel)} className="absolute -top-6 right-4 bg-red-600 text-white p-2.5 rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-700 hover:scale-110">
+                      <Trash2 size={18} />
+                    </button>
                   </div>
                 </div>
               ))}
@@ -218,26 +357,77 @@ const Admin: React.FC = () => {
           </div>
         )}
 
+        {/* TAB: PROFILES */}
         {activeTab === 'profiles' && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-blue-900 uppercase">Inmersionistas (Perfiles)</h1>
-            <form onSubmit={(e) => {e.preventDefault(); handleUpload('profiles', profileForm, fetchProfiles)}} className="bg-white p-6 rounded-2xl shadow-sm grid grid-cols-2 gap-4">
-              <input value={profileForm.name} onChange={e => setProfileForm({...profileForm, name: e.target.value})} placeholder="Nombre del Estudiante" className="p-2 border rounded-lg" required />
-              <input value={profileForm.role} onChange={e => setProfileForm({...profileForm, role: e.target.value})} placeholder="Rol / Semestre" className="p-2 border rounded-lg" required />
-              <input type="file" onChange={e => setSelectedFile(e.target.files![0])} className="p-2 border rounded-lg" />
-              <textarea value={profileForm.description} onChange={e => setProfileForm({...profileForm, description: e.target.value})} placeholder="Biografía / Descripción" className="col-span-2 p-2 border rounded-lg h-32" required />
-              <button type="submit" className="col-span-2 bg-blue-900 text-white py-2 rounded-xl font-bold uppercase tracking-widest">Guardar Perfil</button>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-900">Inmersionistas</h1>
+              <p className="text-gray-500 mt-1">Crea y edita los perfiles del equipo que lidera los proyectos.</p>
+            </div>
+
+            <form onSubmit={(e) => {e.preventDefault(); handleUpload('profiles', profileForm, fetchProfiles)}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Nombre del Inmersionista</label>
+                <input 
+                  required value={profileForm.name} onChange={e => setProfileForm({...profileForm, name: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="Ej: María José Vélez"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Cargo / Semestre</label>
+                <input 
+                  required value={profileForm.role} onChange={e => setProfileForm({...profileForm, role: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow"
+                  placeholder="Estudiante de Psicología, IX Semestre"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Foto de Perfil</label>
+                <div className="relative group">
+                  <input type="file" onChange={e => setSelectedFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload-profile" accept="image/*" />
+                  <label htmlFor="file-upload-profile" className="w-full px-4 py-2 rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-yellow cursor-pointer flex items-center justify-center gap-2 text-sm text-gray-500 transition-colors bg-gray-50">
+                    <Upload size={18} /> {selectedFile ? selectedFile.name : 'Subir Foto'}
+                  </label>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">O URL Externa</label>
+                <input 
+                  value={profileForm.image_url} disabled={!!selectedFile} onChange={e => setProfileForm({...profileForm, image_url: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none disabled:bg-gray-100 disabled:text-gray-400 transition-shadow"
+                  placeholder="https://..."
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2">
+                <label className="text-xs font-bold uppercase text-gray-400">Biografía / Perfil</label>
+                <textarea 
+                  required value={profileForm.description} onChange={e => setProfileForm({...profileForm, description: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary-yellow outline-none transition-shadow h-24"
+                  placeholder="Cuéntanos un poco sobre su experiencia y aporte..."
+                />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
+                  <Users size={18} /> {loading ? 'Guardando...' : 'Crear Perfil'}
+                </button>
+              </div>
             </form>
-            <div className="grid grid-cols-2 gap-6">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {profiles.map(p => (
-                <div key={p.id} className="bg-white p-4 rounded-2xl shadow-sm flex gap-4 relative group">
-                  <img src={p.image_url.startsWith('/') ? `${API_URL}${p.image_url}` : p.image_url} className="w-24 h-24 rounded-xl object-cover shrink-0" />
-                  <div>
-                    <p className="font-bold text-lg text-blue-900">{p.name}</p>
-                    <p className="text-xs text-primary-blue font-bold uppercase mb-2">{p.role}</p>
-                    <p className="text-xs text-gray-500 line-clamp-3">{p.description}</p>
+                <div key={p.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex gap-5 relative group hover:shadow-md transition-all">
+                  <div className="w-28 h-32 shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                    <img src={p.image_url.startsWith('/') ? `${API_URL}${p.image_url}` : p.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={p.name} />
                   </div>
-                  <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={18} /></button>
+                  <div className="flex-1 min-w-0 pr-8">
+                    <h4 className="font-black text-xl text-blue-900 truncate">{p.name}</h4>
+                    <p className="text-xs text-primary-yellow font-black uppercase tracking-widest mb-2 truncate bg-blue-900 w-fit px-2 py-0.5 rounded">{p.role}</p>
+                    <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{p.description}</p>
+                  </div>
+                  <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
+                    <Trash2 size={20} />
+                  </button>
                 </div>
               ))}
             </div>
