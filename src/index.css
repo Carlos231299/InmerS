@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+:root {
+  --color-primary-yellow: #FFCD00;
+  --color-primary-blue: #003087;
+  --color-black: #000000;
+  --color-white: #FFFFFF;
+  
+  --font-main: 'Outfit', sans-serif;
+}
+
+@theme {
+  --color-primary-yellow: #FFCD00;
+  --color-primary-blue: #003087;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--color-white);
+  color: var(--color-black);
+}
+
+/* Custom Styles */
+.glass-morphism {
+  background: rgba(0, 48, 135, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.shadow-premium {
+  box-shadow: 0 10px 30px -5px rgba(0, 48, 135, 0.1);
+}
+
+.btn-primary {
+  background-color: var(--color-primary-yellow);
+  color: var(--color-black);
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 205, 0, 0.4);
+}
+
+.section-padding {
+  padding: 5rem 0;
+}
