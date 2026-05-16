@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -148,7 +148,7 @@ const Admin: React.FC = () => {
             { id: 'gallery', label: 'Galería', icon: ImageIcon },
             { id: 'carousel', label: 'Carrusel Inicio', icon: PlayCircle },
             { id: 'profiles', label: 'Inmersionistas', icon: Users },
-            { id: 'logos', label: 'Alianzas', icon: Image },
+            { id: 'logos', label: 'Alianzas', icon: Handshake },
           ].map(item => (
             <button 
               key={item.id}
