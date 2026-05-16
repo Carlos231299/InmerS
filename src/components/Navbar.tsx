@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap } from 'lucide-react';
+import { BookOpen, GraduationCap, Lock } from 'lucide-react';
 import axios from 'axios';
 import { API_URL } from '../config';
 
@@ -19,13 +19,13 @@ const Navbar: React.FC = () => {
   }, []);
 
   return (
-    <nav className="sticky top-0 z-50 bg-primary-blue shadow-2xl border-b border-blue-900/50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-          {/* Logo & Text */}
-          <Link to="/" className="flex flex-col items-center group min-w-max">
-            <div className="w-12 h-12 bg-primary-yellow rounded-xl flex items-center justify-center group-hover:rotate-12 transition-transform mb-1 shadow-lg">
-              <GraduationCap className="text-primary-blue" size={28} />
+    <nav className="bg-primary-blue sticky top-0 z-50 shadow-xl border-b border-white/10">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between py-3 gap-6">
+          {/* Logo & Brand */}
+          <Link to="/" className="flex flex-col items-start group shrink-0">
+            <div className="bg-white p-1 rounded-lg group-hover:scale-110 transition-transform shadow-md">
+              <GraduationCap className="text-primary-blue" size={32} />
             </div>
             <div className="flex items-center gap-2 mt-1 leading-tight whitespace-nowrap">
               <span className="text-sm font-bold text-white tracking-widest uppercase">Festival</span>
@@ -34,29 +34,39 @@ const Navbar: React.FC = () => {
           </Link>
 
           {/* Institutions Buttons - Pill Style */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="hidden lg:flex flex-wrap justify-center gap-2 flex-1">
             {institutions.map(inst => (
               <Link
                 key={inst.id}
                 to={`/institucion/${inst.id}`}
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap"
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap"
               >
                 {inst.name}
               </Link>
             ))}
           </div>
 
-          {/* Activities Button - Solid Primary */}
-          <Link
-            to="/actividades"
-            className="bg-primary-yellow text-primary-blue px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,205,0,0.3)] hover:shadow-[0_0_30px_rgba(255,205,0,0.5)]"
-          >
-            <BookOpen size={18} />
-            <span className="text-sm">Actividades</span>
-          </Link>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link
+              to="/actividades"
+              className="bg-primary-yellow text-primary-blue px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+            >
+              <BookOpen size={18} />
+              <span className="text-xs uppercase">Actividades</span>
+            </Link>
+            
+            <Link
+              to="/login"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all"
+            >
+              <Lock size={18} className="text-primary-yellow" />
+              <span className="text-xs uppercase">Admin</span>
+            </Link>
+          </div>
         </div>
-      </div >
-    </nav >
+      </div>
+    </nav>
   );
 };
 
