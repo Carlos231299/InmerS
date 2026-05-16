@@ -4,7 +4,7 @@ import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Up
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
-type Tab = 'activities' | 'gallery' | 'carousel' | 'profiles';
+type Tab = 'activities' | 'gallery' | 'carousel' | 'profiles' | 'logos';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('activities');
@@ -13,6 +13,7 @@ const Admin: React.FC = () => {
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [carouselItems, setCarouselItems] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [logos, setLogos] = useState<any[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState<string>('');
 
   // Form states
@@ -30,6 +31,7 @@ const Admin: React.FC = () => {
     fetchInstitutions();
     fetchCarousel();
     fetchProfiles();
+    fetchLogos();
   }, []);
 
   const fetchActivities = async () => {
@@ -55,6 +57,10 @@ const Admin: React.FC = () => {
 
   const fetchProfiles = async () => {
     try { const res = await axios.get(`${API_URL}/api/profiles`); setProfiles(res.data); } catch (err) {}
+  };
+
+  const fetchLogos = async () => {
+    try { const res = await axios.get(`${API_URL}/api/logos`); setLogos(res.data); } catch (err) {}
   };
 
   useEffect(() => {
@@ -142,6 +148,7 @@ const Admin: React.FC = () => {
             { id: 'gallery', label: 'Galería', icon: ImageIcon },
             { id: 'carousel', label: 'Carrusel Inicio', icon: PlayCircle },
             { id: 'profiles', label: 'Inmersionistas', icon: Users },
+            { id: 'logos', label: 'Alianzas', icon: Image },
           ].map(item => (
             <button 
               key={item.id}
@@ -441,6 +448,44 @@ const Admin: React.FC = () => {
                       <Trash2 size={20} />
                     </button>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: LOGOS */}
+        {activeTab === 'logos' && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div>
+              <h1 className="text-3xl font-bold text-blue-900">Alianzas y Logos</h1>
+              <p className="text-gray-500 mt-1">Sube los logos de las instituciones aliadas para el carrusel inferior continuo.</p>
+            </div>
+
+            <form onSubmit={(e) => {e.preventDefault(); handleUpload('logos', {}, fetchLogos)}} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-bold uppercase text-gray-400">Archivo de Logo (PNG transparente recomendado)</label>
+                <div className="relative group">
+                  <input type="file" onChange={e => setSelectedFile(e.target.files ? e.target.files[0] : null)} className="hidden" id="file-upload-logo" accept="image/*" />
+                  <label htmlFor="file-upload-logo" className="w-full px-4 py-2 rounded-lg border-2 border-dashed border-gray-200 hover:border-primary-yellow cursor-pointer flex items-center justify-center gap-2 text-sm text-gray-500 transition-colors bg-gray-50">
+                    <Upload size={18} /> {selectedFile ? selectedFile.name : 'Subir Logo'}
+                  </label>
+                </div>
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
+                  <ImageIcon size={18} /> {loading ? 'Subiendo...' : 'Añadir Alianza'}
+                </button>
+              </div>
+            </form>
+
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+              {logos.map(l => (
+                <div key={l.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-center relative group aspect-video">
+                  <img src={l.url.startsWith('/') ? `${API_URL}${l.url}` : l.url} className="max-w-full max-h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300" alt="Logo" />
+                  <button onClick={() => deleteItem('logos', l.id, fetchLogos)} className="absolute -top-2 -right-2 text-white bg-red-500 hover:bg-red-600 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-md">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
             </div>

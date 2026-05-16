@@ -120,4 +120,16 @@ app.delete('/api/profiles/:id', (req, res) => {
   db.run("DELETE FROM profiles WHERE id = ?", [req.params.id], () => res.json({ success: true }));
 });
 
+// --- LOGOS (ALIANZAS) ---
+app.get('/api/logos', (req, res) => {
+  db.all("SELECT * FROM logos ORDER BY id DESC", (err, rows) => res.json(rows));
+});
+app.post('/api/logos', upload.single('image'), (req, res) => {
+  const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
+  db.run("INSERT INTO logos (url) VALUES (?)", [url], function() { res.json({ id: this.lastID, url }); });
+});
+app.delete('/api/logos/:id', (req, res) => {
+  db.run("DELETE FROM logos WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+});
+
 app.listen(port, () => console.log(`Server at 3001`));

@@ -23,12 +23,14 @@ db.serialize(() => {
   db.run("DROP TABLE IF EXISTS activities");
   db.run("DROP TABLE IF EXISTS carousel");
   db.run("DROP TABLE IF EXISTS profiles");
+  db.run("DROP TABLE IF EXISTS logos");
 
   db.run(`CREATE TABLE institutions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, logo_url TEXT)`);
   db.run(`CREATE TABLE images (id INTEGER PRIMARY KEY AUTOINCREMENT, institution_id INTEGER, url TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL)`);
   db.run(`CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, drive_link TEXT NOT NULL, description TEXT)`);
   db.run(`CREATE TABLE carousel (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL, title TEXT, description TEXT)`);
   db.run(`CREATE TABLE profiles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, image_url TEXT, role TEXT)`);
+  db.run(`CREATE TABLE logos (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL)`);
 
   const stmt = db.prepare("INSERT INTO institutions (name, description, logo_url) VALUES (?, ?, ?)");
   institutions.forEach((name, i) => stmt.run(name, `Sede ${name}`, `https://picsum.photos/seed/${i}/200/200`));
@@ -59,5 +61,11 @@ db.serialize(() => {
   );
   profilesStmt.finalize();
 
-  console.log("DB Seeded with new tables, initial carousel, and profiles!");
+  const logosStmt = db.prepare("INSERT INTO logos (url) VALUES (?)");
+  for (let i = 1; i <= 6; i++) {
+    logosStmt.run(`https://picsum.photos/seed/logo${i}/150/80`);
+  }
+  logosStmt.finalize();
+
+  console.log("DB Seeded with new tables, initial carousel, profiles, and logos!");
 });

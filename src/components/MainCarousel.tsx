@@ -24,7 +24,7 @@ const MainCarousel: React.FC = () => {
     if (items.length > 1) {
       const timer = setInterval(() => {
         setIndex((prev) => (prev + 1) % items.length);
-      }, 5000);
+      }, 8000);
       return () => clearInterval(timer);
     }
   }, [items]);
@@ -33,13 +33,13 @@ const MainCarousel: React.FC = () => {
 
   return (
     <section className="relative h-[85vh] w-full overflow-hidden bg-black">
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false}>
         <motion.div
-          key={items[index].id}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 1.2 }}
+          key={index}
+          initial={{ x: '100%', opacity: 0.8 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '-100%', opacity: 0.8 }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
           <img 
@@ -53,7 +53,7 @@ const MainCarousel: React.FC = () => {
             <motion.h1 
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
+              transition={{ delay: 0.5 }}
               className="text-5xl md:text-7xl font-black text-white mb-4 uppercase tracking-tighter"
             >
               {items[index].title}
@@ -61,7 +61,7 @@ const MainCarousel: React.FC = () => {
             <motion.p 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.7 }}
               className="text-lg md:text-2xl text-primary-yellow font-bold max-w-3xl"
             >
               {items[index].description}
