@@ -78,7 +78,7 @@ const ActivitiesPage: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-6xl w-full flex flex-col md:flex-row relative max-h-[95vh] md:max-h-[85vh]"
+              className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-6xl w-full flex flex-col md:flex-row relative h-[95vh] md:h-[85vh]"
             >
               {/* Preview Side */}
               <div className="w-full md:w-1/2 lg:w-3/5 bg-gray-100 h-[300px] md:h-auto relative border-b md:border-b-0 md:border-r border-gray-200">
