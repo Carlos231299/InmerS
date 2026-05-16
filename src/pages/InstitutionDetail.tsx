@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, X } from 'lucide-react';
 import { API_URL } from '../config';
+import { AnimatePresence } from 'framer-motion';
 
 interface Institution {
   id: number;
@@ -23,6 +24,7 @@ const InstitutionDetail: React.FC = () => {
   const [institution, setInstitution] = useState<Institution | null>(null);
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -81,16 +83,18 @@ const InstitutionDetail: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="group relative overflow-hidden rounded-2xl shadow-lg aspect-4/3"
+                onClick={() => setSelectedImage(img)}
+                className="group relative overflow-hidden rounded-2xl shadow-lg aspect-4/3 cursor-pointer"
               >
                 <img 
                   src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} 
                   alt={img.title} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left">
+                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 text-white text-left">
                   <h4 className="font-bold text-lg mb-1">{img.title}</h4>
-                  <p className="text-xs opacity-80 line-clamp-2">{img.description}</p>
+                  <p className="text-sm opacity-90 line-clamp-2">{img.description}</p>
+                  <span className="text-yellow-400 text-xs font-semibold mt-3 uppercase tracking-wider flex items-center gap-1">Click para ver descripción completa →</span>
                 </div>
               </motion.div>
             ))}
@@ -103,6 +107,43 @@ const InstitutionDetail: React.FC = () => {
           )}
         </div>
       </section>
+
+      {/* Modal for Image Detail */}
+      <AnimatePresence>
+        {selectedImage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedImage(null)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-4xl w-full flex flex-col md:flex-row relative"
+            >
+              <button 
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-4 right-4 z-10 bg-black/50 text-white rounded-full p-2 hover:bg-black transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="md:w-1/2 bg-gray-100 min-h-[300px] md:min-h-[500px]">
+                <img 
+                  src={selectedImage.url.startsWith('/') ? `${API_URL}${selectedImage.url}` : selectedImage.url} 
+                  alt={selectedImage.title}
+                  className="w-full h-full object-cover object-center max-h-[40vh] md:max-h-[70vh]"
+                />
+              </div>
+              <div className="md:w-1/2 p-8 md:p-12 flex flex-col">
+                <h3 className="text-3xl font-black text-blue-900 mb-6 uppercase tracking-tight">{selectedImage.title}</h3>
+                <div className="overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                  <p className="text-gray-600 leading-relaxed whitespace-pre-line text-lg">
+                    {selectedImage.description}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import axios from 'axios';
 import Navbar from './components/Navbar';
 import Profiles from './components/Profiles';
@@ -25,6 +27,7 @@ const HomePage: React.FC = () => {
 
 const ActivitiesPage: React.FC = () => {
   const [activities, setActivities] = React.useState<any[]>([]);
+  const [selectedActivity, setSelectedActivity] = React.useState<any | null>(null);
 
   React.useEffect(() => {
     axios.get(`${API_URL}/api/activities`)
@@ -46,7 +49,17 @@ const ActivitiesPage: React.FC = () => {
               </div>
               <div className="text-center">
                 <p className="font-bold text-blue-900 text-lg">{activity.name}</p>
-                {activity.description && <p className="text-sm text-gray-500">{activity.description}</p>}
+                {activity.description && (
+                  <>
+                    <p className="text-sm text-gray-500 line-clamp-2 mt-2">{activity.description}</p>
+                    <button 
+                      onClick={() => setSelectedActivity(activity)}
+                      className="text-blue-600 hover:text-blue-800 text-sm font-semibold mt-2 inline-flex items-center gap-1 transition-colors"
+                    >
+                      Ver más detalles →
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )) : (
@@ -56,6 +69,34 @@ const ActivitiesPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal for Activity Detail */}
+      <AnimatePresence>
+        {selectedActivity && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedActivity(null)}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-3xl p-8 md:p-12 max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col"
+            >
+              <button 
+                onClick={() => setSelectedActivity(null)}
+                className="absolute top-6 right-6 bg-gray-100 text-gray-600 rounded-full p-2 hover:bg-gray-200 transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <h3 className="text-2xl font-bold text-blue-900 mb-6 pr-8 border-b pb-4">{selectedActivity.name}</h3>
+              <div className="overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1">
+                <p className="whitespace-pre-line text-gray-600 leading-relaxed text-lg">
+                  {selectedActivity.description}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
