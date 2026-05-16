@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X, BarChart3, Camera, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X, BarChart3, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
