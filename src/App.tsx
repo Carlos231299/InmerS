@@ -1,7 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
 import axios from 'axios';
 import Navbar from './components/Navbar';
 import Profiles from './components/Profiles';
