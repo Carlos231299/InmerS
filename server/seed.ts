@@ -34,5 +34,30 @@ db.serialize(() => {
   institutions.forEach((name, i) => stmt.run(name, `Sede ${name}`, `https://picsum.photos/seed/${i}/200/200`));
   stmt.finalize();
 
-  console.log("DB Seeded with new tables!");
+  const carouselStmt = db.prepare("INSERT INTO carousel (url, title, description) VALUES (?, ?, ?)");
+  carouselStmt.run("https://picsum.photos/seed/festival/1920/1080", "Festival por la Vida", "Bienvenidos a nuestro festival. Transformando el territorio con educación y cultura.");
+  carouselStmt.finalize();
+
+  const profilesStmt = db.prepare("INSERT INTO profiles (name, description, image_url, role) VALUES (?, ?, ?, ?)");
+  profilesStmt.run(
+    "ROSA ESTHER MOSQUERA ASPRILLA",
+    "Como practicante en el Festival de la Vida, mi objetivo es fortalecer mi quehacer profesional, potenciar mis habilidades blandas y acompañar a los estudiantes en su proceso de aprendizaje desde un enfoque integral, contribuyendo a la formación de seres humanos íntegros, conscientes y defensores de la vida, para así tener un impacto positivo en su desarrollo personal y en la sociedad.",
+    "https://picsum.photos/seed/rosa/400/500",
+    "Lic. en Ciencias Naturales y Ed. Ambiental - 8° Semestre"
+  );
+  profilesStmt.run(
+    "SARA CATALINA CORDOBA RUEDA",
+    "Mi formación se ha fundamentado a partir de principios y valores que permiten desenvolverme en el entorno social y formativo con calidez humana, transparencia y respeto. Como psicóloga, busco ayudar a transformar vidas y acompañar procesos para un mejor futuro con vocación y servicio.",
+    "https://picsum.photos/seed/sara/400/500",
+    "Estudiante de Psicología - 9° Semestre"
+  );
+  profilesStmt.run(
+    "JESUS DAVID RAMIREZ AMAYA",
+    "Mi formación se ha basado en la implementación de valores primarios del ser humano y la construcción del mismo en la sociedad. Me interesa el deporte, el arte y todo lo relacionado con cultura ancestral, búsqueda del ser y la apropiación de nuestro entorno.",
+    "https://picsum.photos/seed/jesus/400/500",
+    "Estudiante de Psicología - 9° Semestre"
+  );
+  profilesStmt.finalize();
+
+  console.log("DB Seeded with new tables, initial carousel, and profiles!");
 });

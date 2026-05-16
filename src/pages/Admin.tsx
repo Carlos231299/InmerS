@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit } from 'lucide-react';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -22,6 +22,7 @@ const Admin: React.FC = () => {
   const [profileForm, setProfileForm] = useState({ name: '', description: '', role: '', image_url: '' });
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ const Admin: React.FC = () => {
     setCarouselForm({ url: '', title: '', description: '' });
     setProfileForm({ name: '', description: '', role: '', image_url: '' });
     setSelectedFile(null);
+    setEditingId(null);
   };
 
   // --- HANDLERS ---
@@ -101,8 +103,14 @@ const Admin: React.FC = () => {
       Object.keys(data).forEach(key => formData.append(key, data[key]));
       if (selectedFile) formData.append('image', selectedFile);
 
-      await axios.post(`${API_URL}/api/${endpoint}`, formData);
-      toast.success('Guardado correctamente');
+      if (editingId) {
+        await axios.put(`${API_URL}/api/${endpoint}/${editingId}`, formData);
+        toast.success('Actualizado correctamente');
+      } else {
+        await axios.post(`${API_URL}/api/${endpoint}`, formData);
+        toast.success('Guardado correctamente');
+      }
+      
       resetForm();
       callback();
     } catch (err) { toast.error('Error al subir. Verifica tamaño y permisos.'); }
@@ -409,7 +417,7 @@ const Admin: React.FC = () => {
               </div>
               <div className="md:col-span-2 flex justify-end">
                 <button type="submit" disabled={loading} className="bg-primary-blue text-white px-8 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-blue-800 disabled:opacity-50 transition-all shadow-md">
-                  <Users size={18} /> {loading ? 'Guardando...' : 'Crear Perfil'}
+                  <Users size={18} /> {loading ? 'Guardando...' : (editingId ? 'Actualizar Perfil' : 'Crear Perfil')}
                 </button>
               </div>
             </form>
@@ -420,14 +428,19 @@ const Admin: React.FC = () => {
                   <div className="w-28 h-32 shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
                     <img src={p.image_url.startsWith('/') ? `${API_URL}${p.image_url}` : p.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={p.name} />
                   </div>
-                  <div className="flex-1 min-w-0 pr-8">
+                  <div className="flex-1 min-w-0 pr-16">
                     <h4 className="font-black text-xl text-blue-900 truncate">{p.name}</h4>
                     <p className="text-xs text-primary-yellow font-black uppercase tracking-widest mb-2 truncate bg-blue-900 w-fit px-2 py-0.5 rounded">{p.role}</p>
                     <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed">{p.description}</p>
                   </div>
-                  <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="absolute top-4 right-4 text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all">
-                    <Trash2 size={20} />
-                  </button>
+                  <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onClick={() => { setEditingId(p.id); setProfileForm({ name: p.name, description: p.description, role: p.role, image_url: p.image_url }); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg">
+                      <Edit size={20} />
+                    </button>
+                    <button onClick={() => deleteItem('profiles', p.id, fetchProfiles)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg">
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
