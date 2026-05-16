@@ -26,33 +26,51 @@ const Navbar: React.FC = () => {
   return (
     <nav className="bg-primary-blue sticky top-0 z-50 shadow-xl border-b border-white/10">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-2 gap-4">
-          {/* Logo & Brand - Horizontal Alignment */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="bg-white/5 p-2 rounded-xl group-hover:scale-110 transition-transform border border-white/10 shadow-lg">
-              <GraduationCap className="text-primary-yellow" size={32} />
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-black text-white tracking-tighter uppercase">Festival</span>
-              <span className="text-sm font-bold text-primary-yellow tracking-widest uppercase -mt-1">por la Vida</span>
-            </div>
-          </Link>
+        <div className="flex flex-col md:flex-row items-center justify-between py-3 gap-4">
+          {/* Top bar on mobile: Logo + Action Buttons */}
+          <div className="flex items-center justify-between w-full md:w-auto gap-4">
+            <Link to="/" className="flex items-center gap-3 group shrink-0">
+              <div className="bg-white/5 p-2 rounded-xl group-hover:scale-110 transition-transform border border-white/10 shadow-lg">
+                <GraduationCap className="text-primary-yellow" size={32} />
+              </div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-lg font-black text-white tracking-tighter uppercase">Festival</span>
+                <span className="text-sm font-bold text-primary-yellow tracking-widest uppercase -mt-1">por la Vida</span>
+              </div>
+            </Link>
 
-          {/* Institutions Buttons - Pill Style */}
-          <div className="hidden xl:flex flex-wrap justify-center gap-1.5 flex-1 px-4">
+            {/* Action Buttons (Mobile) */}
+            <div className="flex md:hidden items-center gap-2 shrink-0">
+              <Link
+                to="/actividades"
+                className="bg-primary-yellow text-primary-blue p-2 rounded-xl font-black flex items-center gap-2 hover:scale-105 transition-all shadow-lg"
+              >
+                <BookOpen size={20} />
+              </Link>
+              <Link
+                to={isLoggedIn ? "/admin" : "/login"}
+                className={`${isLoggedIn ? 'bg-green-600 hover:bg-green-700' : 'bg-white/5 hover:bg-white/15'} text-white border border-white/10 p-2 rounded-xl font-black flex items-center transition-all`}
+              >
+                {isLoggedIn ? <LayoutDashboard size={20} /> : <Lock size={20} className="text-primary-yellow" />}
+              </Link>
+            </div>
+          </div>
+
+          {/* Institutions Buttons - Scrollable on mobile */}
+          <div className="flex overflow-x-auto md:flex-wrap justify-start md:justify-center gap-2 flex-1 w-full md:w-auto px-2 pb-1 md:pb-0 scrollbar-hide">
             {institutions.map(inst => (
               <Link
                 key={inst.id}
                 to={`/institucion/${inst.id}`}
-                className="bg-white/5 hover:bg-white/15 text-white border border-white/10 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap"
+                className="bg-white/5 hover:bg-white/15 text-white border border-white/10 px-3 py-1.5 rounded-full text-[10px] md:text-[9px] font-bold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap shrink-0"
               >
                 {inst.name}
               </Link>
             ))}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Action Buttons (Desktop) */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             <Link
               to="/actividades"
               className="bg-primary-yellow text-primary-blue px-4 py-2 rounded-xl font-black flex items-center gap-2 hover:scale-105 transition-all shadow-lg text-xs uppercase"

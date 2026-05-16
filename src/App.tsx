@@ -73,25 +73,34 @@ const ActivitiesPage: React.FC = () => {
       {/* Modal for Activity Detail */}
       <AnimatePresence>
         {selectedActivity && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedActivity(null)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedActivity(null)}>
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-3xl p-8 md:p-12 max-w-2xl w-full shadow-2xl relative max-h-[90vh] flex flex-col"
+              className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-6xl w-full flex flex-col md:flex-row relative max-h-[95vh] md:max-h-[85vh]"
             >
               <button 
                 onClick={() => setSelectedActivity(null)}
-                className="absolute top-6 right-6 bg-gray-100 text-gray-600 rounded-full p-2 hover:bg-gray-200 transition-colors"
+                className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black transition-colors"
               >
                 <X size={20} />
               </button>
-              <h3 className="text-2xl font-bold text-blue-900 mb-6 pr-8 border-b pb-4">{selectedActivity.name}</h3>
-              <div className="overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-1">
-                <p className="whitespace-pre-line text-gray-600 leading-relaxed text-lg">
-                  {selectedActivity.description}
-                </p>
+              
+              {/* Preview Side */}
+              <div className="w-full md:w-1/2 lg:w-3/5 bg-gray-100 h-[300px] md:h-auto relative border-b md:border-b-0 md:border-r border-gray-200">
+                <iframe src={selectedActivity.drive_link} className="w-full h-full absolute inset-0" title={selectedActivity.name} />
+              </div>
+
+              {/* Details Side */}
+              <div className="w-full md:w-1/2 lg:w-2/5 p-6 md:p-10 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                <h3 className="text-2xl font-black text-blue-900 mb-6 border-b pb-4 uppercase tracking-tight pr-8">{selectedActivity.name}</h3>
+                <div className="flex-1">
+                  <p className="whitespace-pre-line text-gray-600 leading-relaxed text-lg">
+                    {selectedActivity.description}
+                  </p>
+                </div>
               </div>
             </motion.div>
           </div>
