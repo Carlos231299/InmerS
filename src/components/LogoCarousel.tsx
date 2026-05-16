@@ -31,12 +31,12 @@ const LogoCarousel: React.FC = () => {
         <div className="absolute inset-0 z-10 pointer-events-none" style={{ background: 'linear-gradient(to right, white, transparent 10%, transparent 90%, white)' }}></div>
         <div className="flex animate-marquee whitespace-nowrap w-max pr-16 gap-16">
           {trackLogos.map((logo, i) => (
-            <img key={i} src={logo.url.startsWith('/') ? `${API_URL}${logo.url}` : logo.url} alt="Logo" className="h-16 w-32 object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 shrink-0" />
+            <img key={i} src={logo.url.startsWith('/') ? `${API_URL}${logo.url}` : logo.url} alt="Logo" className="h-[68px] w-[136px] object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 shrink-0" />
           ))}
         </div>
         <div className="flex animate-marquee whitespace-nowrap w-max pr-16 gap-16" aria-hidden="true">
           {trackLogos.map((logo, i) => (
-            <img key={`dup-${i}`} src={logo.url.startsWith('/') ? `${API_URL}${logo.url}` : logo.url} alt="Logo" className="h-16 w-32 object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 shrink-0" />
+            <img key={`dup-${i}`} src={logo.url.startsWith('/') ? `${API_URL}${logo.url}` : logo.url} alt="Logo" className="h-[68px] w-[136px] object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100 shrink-0" />
           ))}
         </div>
       </div>
