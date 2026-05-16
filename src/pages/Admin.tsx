@@ -314,7 +314,7 @@ const Admin: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {galleryImages.map(img => (
                 <div key={img.id} className="relative aspect-4/3 rounded-2xl overflow-hidden group shadow-sm">
-                  <img src={img.url} alt={img.title} className="w-full h-full object-cover" />
+                  <img src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} alt={img.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4 text-white">
                     <p className="font-bold text-sm">{img.title}</p>
                     <button 

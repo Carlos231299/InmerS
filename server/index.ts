@@ -100,9 +100,9 @@ app.get('/api/institutions/:id/images', (req, res) => {
 app.post('/api/images', upload.single('image'), (req, res) => {
   const { institution_id, title, description, url: externalUrl } = req.body;
   
-  // If a file was uploaded, use the local path. Otherwise use the provided URL.
+  // Use relative path for universal compatibility
   const imageUrl = req.file 
-    ? `http://localhost:3001/uploads/${req.file.filename}` 
+    ? `/uploads/${req.file.filename}` 
     : externalUrl;
 
   if (!imageUrl) {

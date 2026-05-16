@@ -84,7 +84,7 @@ const InstitutionDetail: React.FC = () => {
                 className="group relative overflow-hidden rounded-2xl shadow-lg aspect-4/3"
               >
                 <img 
-                  src={img.url} 
+                  src={img.url.startsWith('/') ? `${API_URL}${img.url}` : img.url} 
                   alt={img.title} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
