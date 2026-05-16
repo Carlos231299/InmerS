@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Lock, User, GraduationCap } from 'lucide-react';
 import { API_URL } from '../config';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,64 +14,59 @@ const Login: React.FC = () => {
       const res = await axios.post(`${API_URL}/api/login`, { username, password });
       if (res.data.success) {
         localStorage.setItem('adminToken', res.data.token);
+        toast.success('¡Bienvenido, Administrador!');
         window.location.href = '/admin';
       }
     } catch (err) {
-      setError('Credenciales incorrectas. Por favor intente de nuevo.');
+      toast.error('Usuario o contraseña incorrectos');
     }
   };
 
   return (
-    <div className="min-h-screen bg-blue-950 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden p-10">
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-primary-yellow rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <GraduationCap className="text-blue-900" size={32} />
+    <div className="min-h-screen bg-blue-900 flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-500">
+        <div className="p-8 text-center bg-primary-yellow">
+          <div className="inline-flex p-4 bg-primary-blue rounded-2xl mb-4 shadow-lg">
+            <GraduationCap className="text-white" size={40} />
           </div>
-          <h2 className="text-2xl font-black text-blue-900 uppercase tracking-tighter">Acceso Administrativo</h2>
-          <p className="text-gray-500 text-sm mt-1">Ingresa tus credenciales para gestionar el portal</p>
+          <h1 className="text-2xl font-black text-primary-blue uppercase tracking-tight">Acceso Administrativo</h1>
+          <p className="text-blue-900/60 font-bold text-sm mt-1">Festival por la Vida</p>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        
+        <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase text-gray-400 ml-1">Usuario</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Usuario</label>
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
-                required
                 type="text"
+                required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-primary-yellow/20 focus:border-primary-yellow outline-none transition-all"
-                placeholder="Nombre de usuario"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary-yellow focus:bg-white outline-none transition-all"
+                placeholder="Ingresa tu usuario"
               />
             </div>
           </div>
-
+          
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase text-gray-400 ml-1">Contraseña</label>
+            <label className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Contraseña</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
-                required
                 type="password"
+                required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-200 focus:ring-4 focus:ring-primary-yellow/20 focus:border-primary-yellow outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary-yellow focus:bg-white outline-none transition-all"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
-          {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-xl text-xs font-bold text-center border border-red-100 animate-bounce">
-              {error}
-            </div>
-          )}
-
           <button 
             type="submit"
-            className="w-full bg-blue-900 text-white py-4 rounded-2xl font-bold hover:bg-blue-800 transition-all shadow-xl hover:shadow-blue-900/30 flex items-center justify-center gap-2"
+            className="w-full bg-primary-blue text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-xl hover:bg-blue-800 hover:-translate-y-1 active:translate-y-0 transition-all"
           >
             Iniciar Sesión
           </button>

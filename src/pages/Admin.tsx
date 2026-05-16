@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, Edit, LogOut, Upload } from 'lucide-react';
 import { API_URL } from '../config';
+import { toast } from 'sonner';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'activities' | 'gallery'>('activities');
@@ -23,20 +24,32 @@ const Admin: React.FC = () => {
   }, []);
 
   const fetchActivities = async () => {
-    const res = await axios.get(`${API_URL}/api/activities`);
-    setActivities(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/api/activities`);
+      setActivities(res.data);
+    } catch (err) {
+      toast.error('Error al cargar las actividades');
+    }
   };
 
   const fetchInstitutions = async () => {
-    const res = await axios.get(`${API_URL}/api/institutions`);
-    setInstitutions(res.data);
-    if (res.data.length > 0) setSelectedInstitution(res.data[0].id);
+    try {
+      const res = await axios.get(`${API_URL}/api/institutions`);
+      setInstitutions(res.data);
+      if (res.data.length > 0) setSelectedInstitution(res.data[0].id);
+    } catch (err) {
+      toast.error('Error al cargar las instituciones');
+    }
   };
 
   const fetchGallery = async (instId: string) => {
     if (!instId) return;
-    const res = await axios.get(`${API_URL}/api/institutions/${instId}/images`);
-    setGalleryImages(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/api/institutions/${instId}/images`);
+      setGalleryImages(res.data);
+    } catch (err) {
+      toast.error('Error al cargar la galería');
+    }
   };
 
   useEffect(() => {
@@ -51,20 +64,31 @@ const Admin: React.FC = () => {
   // Activity Handlers
   const saveActivity = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingActivity) {
-      await axios.put(`${API_URL}/api/activities/${editingActivity}`, activityForm);
-    } else {
-      await axios.post(`${API_URL}/api/activities`, activityForm);
+    try {
+      if (editingActivity) {
+        await axios.put(`${API_URL}/api/activities/${editingActivity}`, activityForm);
+        toast.success('Actividad actualizada correctamente');
+      } else {
+        await axios.post(`${API_URL}/api/activities`, activityForm);
+        toast.success('Actividad creada con éxito');
+      }
+      setActivityForm({ name: '', drive_link: '', description: '' });
+      setEditingActivity(null);
+      fetchActivities();
+    } catch (err) {
+      toast.error('Error al guardar la actividad');
     }
-    setActivityForm({ name: '', drive_link: '', description: '' });
-    setEditingActivity(null);
-    fetchActivities();
   };
 
   const deleteActivity = async (id: number) => {
     if (confirm('¿Eliminar esta actividad?')) {
-      await axios.delete(`${API_URL}/api/activities/${id}`);
-      fetchActivities();
+      try {
+        await axios.delete(`${API_URL}/api/activities/${id}`);
+        toast.success('Actividad eliminada');
+        fetchActivities();
+      } catch (err) {
+        toast.error('No se pudo eliminar la actividad');
+      }
     }
   };
 
@@ -84,7 +108,7 @@ const Admin: React.FC = () => {
       } else if (imageForm.url) {
         formData.append('url', imageForm.url);
       } else {
-        alert('Por favor selecciona un archivo o ingresa una URL');
+        toast.warning('Selecciona un archivo o ingresa una URL');
         setUploadLoading(false);
         return;
       }
@@ -93,12 +117,13 @@ const Admin: React.FC = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
+      toast.success('Imagen subida con éxito');
       setImageForm({ url: '', title: '', description: '' });
       setSelectedFile(null);
       fetchGallery(selectedInstitution);
     } catch (err) {
       console.error(err);
-      alert('Error al subir la imagen');
+      toast.error('Error al subir la imagen. Verifica el tamaño y permisos.');
     } finally {
       setUploadLoading(false);
     }
@@ -106,8 +131,13 @@ const Admin: React.FC = () => {
 
   const deleteImage = async (id: number) => {
     if (confirm('¿Eliminar esta imagen?')) {
-      await axios.delete(`${API_URL}/api/images/${id}`);
-      fetchGallery(selectedInstitution);
+      try {
+        await axios.delete(`${API_URL}/api/images/${id}`);
+        toast.success('Imagen eliminada de la galería');
+        fetchGallery(selectedInstitution);
+      } catch (err) {
+        toast.error('No se pudo eliminar la imagen');
+      }
     }
   };
 

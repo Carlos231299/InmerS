@@ -9,6 +9,7 @@ import InstitutionDetail from './pages/InstitutionDetail';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import { API_URL } from './config';
+import { Toaster } from 'sonner';
 
 const HomePage: React.FC = () => {
   return (
@@ -67,6 +68,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-white">
+        <Toaster position="top-right" richColors />
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />

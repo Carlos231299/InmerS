@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { BookOpen, GraduationCap, Lock } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { BookOpen, GraduationCap, Lock, LayoutDashboard } from 'lucide-react';
 import axios from 'axios';
 import { API_URL } from '../config';
 
@@ -11,12 +11,18 @@ interface Institution {
 
 const Navbar: React.FC = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     axios.get(`${API_URL}/api/institutions`)
       .then(res => setInstitutions(res.data))
       .catch(err => console.error(err));
-  }, []);
+    
+    // Check auth status
+    const token = localStorage.getItem('adminToken');
+    setIsLoggedIn(!!token);
+  }, [location]); // Re-check when route changes
 
   return (
     <nav className="bg-primary-blue sticky top-0 z-50 shadow-xl border-b border-white/10">
@@ -57,11 +63,13 @@ const Navbar: React.FC = () => {
             </Link>
             
             <Link
-              to="/login"
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all"
+              to={isLoggedIn ? "/admin" : "/login"}
+              className={`${isLoggedIn ? 'bg-green-600 hover:bg-green-700' : 'bg-white/10 hover:bg-white/20'} text-white border border-white/20 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all`}
             >
-              <Lock size={18} className="text-primary-yellow" />
-              <span className="text-xs uppercase">Admin</span>
+              {isLoggedIn ? <LayoutDashboard size={18} /> : <Lock size={18} className="text-primary-yellow" />}
+              <span className="text-xs uppercase whitespace-nowrap">
+                {isLoggedIn ? 'Panel Admin' : 'Admin'}
+              </span>
             </Link>
           </div>
         </div>
