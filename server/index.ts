@@ -12,51 +12,33 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 3001;
 
-// Increased limits for large image uploads
 app.use(cors());
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
-// Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
-// Serve uploaded files statically
 app.use('/uploads', express.static(uploadsDir));
 
 const dbPath = path.resolve(__dirname, '../database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
-// Multer configuration with 100MB limit
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
+  destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, uniqueSuffix + path.extname(file.originalname));
   }
 });
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 100 * 1024 * 1024 } // 100MB
-});
+const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
 
-// Basic Auth for Admin (Hardcoded for now)
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "admin123";
 
-// Helper to format Drive links to preview
 const formatDriveLink = (link: string) => {
-  if (link.includes('/view')) {
-    return link.replace('/view', '/preview').split('?')[0];
-  }
+  if (link.includes('/view')) return link.replace('/view', '/preview').split('?')[0];
   if (!link.includes('/preview')) {
-    if (!link.includes('http')) {
-       return `https://drive.google.com/file/d/${link}/preview`;
-    }
     if (link.includes('/d/')) {
         const parts = link.split('/d/');
         const id = parts[1].split('/')[0];
@@ -66,122 +48,76 @@ const formatDriveLink = (link: string) => {
   return link;
 };
 
-// --- AUTH ENDPOINTS ---
+// --- AUTH ---
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    res.json({ success: true, token: "fake-jwt-token" });
-  } else {
-    res.status(401).json({ success: false, message: "Credenciales inválidas" });
-  }
+  if (username === ADMIN_USER && password === ADMIN_PASS) res.json({ success: true, token: "fake-jwt-token" });
+  else res.status(401).json({ success: false, message: "Inválido" });
 });
 
 // --- INSTITUTIONS ---
 app.get('/api/institutions', (req, res) => {
-  db.all("SELECT * FROM institutions", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+  db.all("SELECT * FROM institutions", (err, rows) => res.json(rows));
 });
-
 app.get('/api/institutions/:id', (req, res) => {
-  const { id } = req.params;
-  db.get("SELECT * FROM institutions WHERE id = ?", [id], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(row);
-  });
+  db.get("SELECT * FROM institutions WHERE id = ?", [req.params.id], (err, row) => res.json(row));
 });
 
-// --- IMAGES (GALLERY) ---
+// --- GALLERY ---
 app.get('/api/institutions/:id/images', (req, res) => {
-  const { id } = req.params;
-  db.all("SELECT * FROM images WHERE institution_id = ?", [id], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+  db.all("SELECT * FROM images WHERE institution_id = ?", [req.params.id], (err, rows) => res.json(rows));
 });
-
 app.post('/api/images', upload.single('image'), (req, res) => {
-  const { institution_id, title, description, url: externalUrl } = req.body;
-  
-  // Use relative path for universal compatibility
-  const imageUrl = req.file 
-    ? `/uploads/${req.file.filename}` 
-    : externalUrl;
-
-  if (!imageUrl) {
-    return res.status(400).json({ error: "Se requiere una imagen (archivo o URL)" });
-  }
-
-  db.run("INSERT INTO images (institution_id, url, title, description) VALUES (?, ?, ?, ?)", 
-    [institution_id, imageUrl, title, description], 
-    function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, url: imageUrl });
-    }
-  );
+  const { institution_id, title, description, url: extUrl } = req.body;
+  const url = req.file ? `/uploads/${req.file.filename}` : extUrl;
+  db.run("INSERT INTO images (institution_id, url, title, description) VALUES (?, ?, ?, ?)", [institution_id, url, title, description], function() { res.json({ id: this.lastID, url }); });
 });
-
 app.delete('/api/images/:id', (req, res) => {
-  const { id } = req.params;
-  
-  db.get("SELECT url FROM images WHERE id = ?", [id], (err, row) => {
-    if (row && row.url.includes('/uploads/')) {
-      const fileName = row.url.split('/uploads/')[1];
-      const filePath = path.join(uploadsDir, fileName);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    }
-    
-    db.run("DELETE FROM images WHERE id = ?", [id], (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    });
-  });
+  db.run("DELETE FROM images WHERE id = ?", [req.params.id], () => res.json({ success: true }));
 });
 
 // --- ACTIVITIES ---
 app.get('/api/activities', (req, res) => {
-  db.all("SELECT * FROM activities", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+  db.all("SELECT * FROM activities", (err, rows) => res.json(rows));
 });
-
 app.post('/api/activities', (req, res) => {
   const { name, drive_link, description } = req.body;
-  const formattedLink = formatDriveLink(drive_link);
-  db.run("INSERT INTO activities (name, drive_link, description) VALUES (?, ?, ?)", 
-    [name, formattedLink, description], 
-    function(err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID, drive_link: formattedLink });
-    }
-  );
+  const link = formatDriveLink(drive_link);
+  db.run("INSERT INTO activities (name, drive_link, description) VALUES (?, ?, ?)", [name, link, description], function() { res.json({ id: this.lastID }); });
 });
-
-app.put('/api/activities/:id', (req, res) => {
-  const { id } = req.params;
-  const { name, drive_link, description } = req.body;
-  const formattedLink = formatDriveLink(drive_link);
-  db.run("UPDATE activities SET name = ?, drive_link = ?, description = ? WHERE id = ?", 
-    [name, formattedLink, description, id], 
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true, drive_link: formattedLink });
-    }
-  );
-});
-
 app.delete('/api/activities/:id', (req, res) => {
-  const { id } = req.params;
-  db.run("DELETE FROM activities WHERE id = ?", [id], (err) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true });
-  });
+  db.run("DELETE FROM activities WHERE id = ?", [req.params.id], () => res.json({ success: true }));
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+// --- CAROUSEL ---
+app.get('/api/carousel', (req, res) => {
+  db.all("SELECT * FROM carousel ORDER BY id DESC", (err, rows) => res.json(rows));
 });
+app.post('/api/carousel', upload.single('image'), (req, res) => {
+  const { title, description } = req.body;
+  const url = req.file ? `/uploads/${req.file.filename}` : req.body.url;
+  db.run("INSERT INTO carousel (url, title, description) VALUES (?, ?, ?)", [url, title, description], function() { res.json({ id: this.lastID, url }); });
+});
+app.delete('/api/carousel/:id', (req, res) => {
+  db.run("DELETE FROM carousel WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+});
+
+// --- PROFILES (INMERSIONISTAS) ---
+app.get('/api/profiles', (req, res) => {
+  db.all("SELECT * FROM profiles", (err, rows) => res.json(rows));
+});
+app.post('/api/profiles', upload.single('image'), (req, res) => {
+  const { name, description, role } = req.body;
+  const image_url = req.file ? `/uploads/${req.file.filename}` : req.body.image_url;
+  db.run("INSERT INTO profiles (name, description, image_url, role) VALUES (?, ?, ?, ?)", [name, description, image_url, role], function() { res.json({ id: this.lastID }); });
+});
+app.put('/api/profiles/:id', upload.single('image'), (req, res) => {
+  const { name, description, role, image_url: oldUrl } = req.body;
+  const image_url = req.file ? `/uploads/${req.file.filename}` : oldUrl;
+  db.run("UPDATE profiles SET name=?, description=?, image_url=?, role=? WHERE id=?", [name, description, image_url, role, req.params.id], () => res.json({ success: true }));
+});
+app.delete('/api/profiles/:id', (req, res) => {
+  db.run("DELETE FROM profiles WHERE id = ?", [req.params.id], () => res.json({ success: true }));
+});
+
+app.listen(port, () => console.log(`Server at 3001`));

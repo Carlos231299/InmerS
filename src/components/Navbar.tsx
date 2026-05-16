@@ -29,7 +29,7 @@ const Navbar: React.FC = () => {
         <div className="flex items-center justify-between py-2 gap-4">
           {/* Logo & Brand - Horizontal Alignment */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="bg-white/5 p-2 rounded-xl group-hover:scale-110 transition-transform border border-white/10">
+            <div className="bg-white/5 p-2 rounded-xl group-hover:scale-110 transition-transform border border-white/10 shadow-lg">
               <GraduationCap className="text-primary-yellow" size={32} />
             </div>
             <div className="flex flex-col leading-tight">

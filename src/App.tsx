@@ -5,6 +5,7 @@ import Navbar from './components/Navbar';
 import Profiles from './components/Profiles';
 import LogoCarousel from './components/LogoCarousel';
 import Review from './components/Review';
+import MainCarousel from './components/MainCarousel';
 import InstitutionDetail from './pages/InstitutionDetail';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
@@ -14,6 +15,7 @@ import { Toaster } from 'sonner';
 const HomePage: React.FC = () => {
   return (
     <main className="animate-in fade-in duration-700">
+      <MainCarousel />
       <Review />
       <Profiles />
       <LogoCarousel />

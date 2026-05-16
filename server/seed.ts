@@ -18,50 +18,21 @@ const institutions = [
 ];
 
 db.serialize(() => {
-  // Clear existing data with DROP to ensure schema updates
   db.run("DROP TABLE IF EXISTS images");
   db.run("DROP TABLE IF EXISTS institutions");
   db.run("DROP TABLE IF EXISTS activities");
+  db.run("DROP TABLE IF EXISTS carousel");
+  db.run("DROP TABLE IF EXISTS profiles");
 
-  // Re-create tables
-  db.run(`CREATE TABLE IF NOT EXISTS institutions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    description TEXT,
-    logo_url TEXT
-  )`);
+  db.run(`CREATE TABLE institutions (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, logo_url TEXT)`);
+  db.run(`CREATE TABLE images (id INTEGER PRIMARY KEY AUTOINCREMENT, institution_id INTEGER, url TEXT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL)`);
+  db.run(`CREATE TABLE activities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, drive_link TEXT NOT NULL, description TEXT)`);
+  db.run(`CREATE TABLE carousel (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL, title TEXT, description TEXT)`);
+  db.run(`CREATE TABLE profiles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, image_url TEXT, role TEXT)`);
 
-  db.run(`CREATE TABLE IF NOT EXISTS images (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    institution_id INTEGER,
-    url TEXT NOT NULL,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    FOREIGN KEY(institution_id) REFERENCES institutions(id)
-  )`);
-
-  db.run(`CREATE TABLE IF NOT EXISTS activities (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    drive_link TEXT NOT NULL,
-    description TEXT
-  )`);
-
-  // Seed institutions
   const stmt = db.prepare("INSERT INTO institutions (name, description, logo_url) VALUES (?, ?, ?)");
-  institutions.forEach((name, index) => {
-    stmt.run(name, `Descripción breve de la ${name}.`, `https://picsum.photos/seed/${index + 1}/200/200`);
-  });
+  institutions.forEach((name, i) => stmt.run(name, `Sede ${name}`, `https://picsum.photos/seed/${i}/200/200`));
   stmt.finalize();
 
-  // Seed some images for each institution
-  const imgStmt = db.prepare("INSERT INTO images (institution_id, url, title, description) VALUES (?, ?, ?, ?)");
-  for (let i = 1; i <= 6; i++) {
-    for (let j = 1; j <= 4; j++) {
-      imgStmt.run(i, `https://picsum.photos/seed/inst${i}img${j}/800/600`, `Imagen ${j}`, `Descripción de la imagen ${j} para la institución ${i}`);
-    }
-  }
-  imgStmt.finalize();
-
-  console.log("Database seeded successfully!");
+  console.log("DB Seeded with new tables!");
 });
