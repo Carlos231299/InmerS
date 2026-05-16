@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "tsx watch server/index.ts",
-    "seed": "tsx server/seed.ts"
+    "server": "nodemon --watch server --exec ts-node server/index.ts",
+    "seed": "ts-node server/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.0",
@@ -49,6 +49,7 @@
     "postcss": "^8.5.14",
     "tailwindcss": "^4.3.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.22.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12"
