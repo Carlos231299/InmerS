@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, Lock, LayoutDashboard } from 'lucide-react';
+import { BookOpen, GraduationCap, Lock, LayoutDashboard, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { API_URL } from '../config';
 
@@ -12,7 +13,12 @@ interface Institution {
 const Navbar: React.FC = () => {
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    setIsMenuOpen(false); // Close menu when route changes
+  }, [location.pathname]);
 
   useEffect(() => {
     axios.get(`${API_URL}/api/institutions`)
@@ -39,7 +45,7 @@ const Navbar: React.FC = () => {
               </div>
             </Link>
 
-            {/* Action Buttons (Mobile) */}
+            {/* Action Buttons & Hamburger (Mobile) */}
             <div className="flex md:hidden items-center gap-2 shrink-0">
               <Link
                 to="/actividades"
@@ -53,16 +59,22 @@ const Navbar: React.FC = () => {
               >
                 {isLoggedIn ? <LayoutDashboard size={20} /> : <Lock size={20} className="text-primary-yellow" />}
               </Link>
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                className="bg-white/5 text-white border border-white/10 p-2 rounded-xl hover:bg-white/15 transition-all ml-1"
+              >
+                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
             </div>
           </div>
 
-          {/* Institutions Buttons - Scrollable on mobile */}
-          <div className="flex overflow-x-auto md:flex-wrap justify-start md:justify-center gap-2 flex-1 w-full md:w-auto px-2 pb-1 md:pb-0 scrollbar-hide">
+          {/* Institutions Buttons - Desktop */}
+          <div className="hidden md:flex flex-wrap justify-center gap-1.5 flex-1 px-4">
             {institutions.map(inst => (
               <Link
                 key={inst.id}
                 to={`/institucion/${inst.id}`}
-                className="bg-white/5 hover:bg-white/15 text-white border border-white/10 px-3 py-1.5 rounded-full text-[10px] md:text-[9px] font-bold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap shrink-0"
+                className="bg-white/5 hover:bg-white/15 text-white border border-white/10 px-3 py-1.5 rounded-full text-[10px] xl:text-[9px] font-bold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow whitespace-nowrap shrink-0"
               >
                 {inst.name}
               </Link>
@@ -90,6 +102,31 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="py-4 border-t border-white/10 mt-2 flex flex-col gap-2">
+                <h4 className="text-primary-yellow text-[10px] font-bold uppercase tracking-widest mb-2 px-2 opacity-80">Nuestras Instituciones</h4>
+                {institutions.map(inst => (
+                  <Link
+                    key={inst.id}
+                    to={`/institucion/${inst.id}`}
+                    className="bg-white/5 hover:bg-white/15 text-white border border-white/10 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all hover:border-primary-yellow hover:text-primary-yellow"
+                  >
+                    {inst.name}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

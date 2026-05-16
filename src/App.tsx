@@ -81,13 +81,6 @@ const ActivitiesPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               className="bg-white rounded-3xl overflow-hidden shadow-2xl max-w-6xl w-full flex flex-col md:flex-row relative max-h-[95vh] md:max-h-[85vh]"
             >
-              <button 
-                onClick={() => setSelectedActivity(null)}
-                className="absolute top-4 right-4 z-20 bg-black/50 text-white rounded-full p-2 hover:bg-black transition-colors"
-              >
-                <X size={20} />
-              </button>
-              
               {/* Preview Side */}
               <div className="w-full md:w-1/2 lg:w-3/5 bg-gray-100 h-[300px] md:h-auto relative border-b md:border-b-0 md:border-r border-gray-200">
                 <iframe src={selectedActivity.drive_link} className="w-full h-full absolute inset-0" title={selectedActivity.name} />
@@ -96,10 +89,18 @@ const ActivitiesPage: React.FC = () => {
               {/* Details Side */}
               <div className="w-full md:w-1/2 lg:w-2/5 p-6 md:p-10 flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                 <h3 className="text-2xl font-black text-blue-900 mb-6 border-b pb-4 uppercase tracking-tight pr-8">{selectedActivity.name}</h3>
-                <div className="flex-1">
+                <div className="flex-1 mb-6">
                   <p className="whitespace-pre-line text-gray-600 leading-relaxed text-lg">
                     {selectedActivity.description}
                   </p>
+                </div>
+                <div className="mt-auto border-t pt-4">
+                  <button
+                    onClick={() => setSelectedActivity(null)}
+                    className="w-full bg-primary-blue hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 uppercase tracking-wide"
+                  >
+                    Cerrar Detalle
+                  </button>
                 </div>
               </div>
             </motion.div>
