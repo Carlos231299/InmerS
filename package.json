@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "tsx watch server/index.ts",
-    "seed": "tsx server/seed.tsx"
+    "seed": "tsx server/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.0",
