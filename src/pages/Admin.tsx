@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X, BarChart3, Camera } from 'lucide-react';
+import { LayoutDashboard, FileText, Image as ImageIcon, Plus, Trash2, LogOut, Upload, Users, PlayCircle, Edit, Handshake, Menu, X, BarChart3, Camera, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { API_URL } from '../config';
 import { toast } from 'sonner';
 
@@ -17,6 +18,7 @@ const Admin: React.FC = () => {
   const [logos, setLogos] = useState<any[]>([]);
   const [selectedInstitution, setSelectedInstitution] = useState<string>('');
   const [stats, setStats] = useState<any>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Form states
   const [activityForm, setActivityForm] = useState({ name: '', drive_link: '', description: '' });
@@ -29,13 +31,18 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchStats();
     fetchActivities();
     fetchInstitutions();
     fetchCarousel();
     fetchProfiles();
     fetchLogos();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'dashboard') {
+      fetchStats();
+    }
+  }, [activeTab]);
 
   const fetchStats = async () => {
     try { const res = await axios.get(`${API_URL}/api/stats`); setStats(res.data); } catch (err) {}
@@ -75,10 +82,12 @@ const Admin: React.FC = () => {
   }, [selectedInstitution]);
 
   const handleLogout = () => {
-    if (window.confirm('¿Estás seguro de que deseas cerrar la sesión?')) {
-      localStorage.removeItem('adminToken');
-      window.location.href = '/login';
-    }
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem('adminToken');
+    window.location.href = '/login';
   };
 
   const resetForm = () => {
@@ -197,6 +206,40 @@ const Admin: React.FC = () => {
       </aside>
 
       <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+        {/* LOGOUT CONFIRMATION MODAL */}
+        <AnimatePresence>
+          {showLogoutModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl text-center"
+              >
+                <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <LogOut size={36} />
+                </div>
+                <h3 className="text-2xl font-black text-blue-900 mb-2">¿Cerrar Sesión?</h3>
+                <p className="text-gray-500 mb-8 font-medium">Estás a punto de salir del panel de administración.</p>
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={confirmLogout}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md active:scale-95"
+                  >
+                    Sí, cerrar sesión
+                  </button>
+                  <button 
+                    onClick={() => setShowLogoutModal(false)}
+                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 rounded-xl transition-all active:scale-95"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* TAB: DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -239,21 +282,29 @@ const Admin: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2"><Camera size={20} className="text-primary-yellow" /> Fotos por Institución</h3>
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    {stats.galleryStats.length > 0 ? (
-                      <ul className="divide-y divide-gray-100">
-                        {stats.galleryStats.map((inst: any, idx: number) => (
-                          <li key={idx} className="flex justify-between items-center p-4 hover:bg-gray-50 transition-colors">
-                            <span className="font-bold text-gray-700">{inst.name}</span>
-                            <span className="bg-blue-50 text-blue-900 font-black px-3 py-1 rounded-lg text-sm">{inst.photoCount} {inst.photoCount === 1 ? 'foto' : 'fotos'}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="p-8 text-center text-gray-400 font-medium">No hay instituciones registradas.</div>
-                    )}
-                  </div>
+                  <h3 className="text-xl font-bold text-blue-900 mb-6 flex items-center gap-2"><Camera size={24} className="text-primary-yellow" /> Resumen de Galerías Institucionales</h3>
+                  {stats.galleryStats.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                      {stats.galleryStats.map((inst: any, idx: number) => (
+                        <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                          <div className="flex items-center gap-4 w-2/3">
+                            <div className="w-12 h-12 shrink-0 bg-blue-50 text-blue-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <ImageIcon size={20} />
+                            </div>
+                            <h4 className="font-bold text-gray-700 leading-tight text-sm line-clamp-2">{inst.name}</h4>
+                          </div>
+                          <div className="flex flex-col items-end shrink-0">
+                            <span className="text-3xl font-black text-blue-900 leading-none">{inst.photoCount}</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{inst.photoCount === 1 ? 'foto' : 'fotos'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-400 font-medium">
+                      No hay instituciones registradas.
+                    </div>
+                  )}
                 </div>
               </>
             ) : (
